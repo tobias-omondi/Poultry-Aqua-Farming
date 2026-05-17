@@ -102,8 +102,8 @@ Server runs at `http://127.0.0.1:8000/`
 
 ### Phase 1 — Chickens (current)
 - [x] Project setup and app architecture
-- [ ] Django models — Batch, DailyLog, Cost, Sale, Housing
-- [ ] REST API endpoints
+- [x] Django models — Batch, DailyLog, Cost, Sale, Housing, inventory
+- [x] REST API endpoints
 - [ ] P&L calculation logic
 - [ ] Inventory stock and alert system
 - [ ] Admin panel configuration
