@@ -4,7 +4,8 @@ const ThemeContext = createContext()
 
 export function ThemeProvider({ children }) {
   const [dark, setDark] = useState(() => {
-    return localStorage.getItem('farmflow-theme') === 'dark'
+    const stored = localStorage.getItem('farmflow-theme')
+    return stored === 'dark' ? true : false
   })
 
   useEffect(() => {
