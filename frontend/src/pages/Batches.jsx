@@ -1,238 +1,690 @@
 import React, { useEffect, useState } from 'react'
-import { getBatches } from '../api/index'
-import { useTheme } from '../context/ThemeContext'
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  ClipboardList,
+  X,
+  Egg,
+  Bird,
+  Activity,
+} from 'lucide-react'
 
-export default function Batches() {
-  const { dark } = useTheme()
-  const [batches, setBatches] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    breed: '',
-    initial_count: '',
-    current_count: '',
-    housing_unit: '',
-    start_date: '',
-  })
+import {
+  getBatches,
+  createBatch,
+  updateBatch,
+  deleteBatch,
+  getDailyLogs,
+} from '../api'
 
-  useEffect(() => {
-    getBatches()
-      .then(res => {
-        setBatches(res.data)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
+const STATUS_COLORS = {
+  active:
+    'bg-green-100 text-green-700 border border-green-200',
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  harvested:
+    'bg-blue-100 text-blue-700 border border-blue-200',
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const newBatch = {
-      ...formData,
-      initial_count: parseInt(formData.initial_count),
-      current_count: parseInt(formData.current_count),
-      status: 'active',
-      mortality_percentage: 0,
-    }
-    setBatches(prev => [...prev, { id: prev.length + 1, ...newBatch }])
-    setFormData({
-      name: '',
-      breed: '',
-      initial_count: '',
-      current_count: '',
-      housing_unit: '',
-      start_date: '',
-    })
-    setShowForm(false)
-  }
+  closed:
+    'bg-orange-100 text-orange-700 border border-orange-200',
+}
 
-  const handleDelete = (id) => {
-    setBatches(prev => prev.filter(b => b.id !== id))
-  }
+const BREEDS = [
+  'kienyeji',
+  'broiler',
+  'layer',
+]
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'active':
-        return <CheckCircle className="w-4 h-4 text-green-400" />
-      case 'harvested':
-        return <AlertCircle className="w-4 h-4 text-blue-400" />
-      default:
-        return <Clock className="w-4 h-4 text-amber-400" />
-    }
-  }
+const EMPTY_FORM = {
+  name: '',
+  breed: 'kienyeji',
+  initial_count: '',
+  current_count: '',
+  purchase_cost: '',
+  start_date: '',
+  end_date: '',
+  status: 'active',
+  notes: '',
+}
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center h-64 gap-3">
-      <Clock className="w-10 h-10 text-amber-500 animate-pulse" />
-      <span className="text-slate-500 text-sm">Loading batches...</span>
-    </div>
+const BatchModal = ({
+  batch,
+  onClose,
+  onSaved,
+}) => {
+  const [form, setForm] = useState(
+    batch || EMPTY_FORM
   )
 
-  return (
-    <div className="max-w-[1200px]">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">
-            All Batches
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">{batches.length} total batches</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold transition-all duration-200 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Batch</span>
-        </button>
-      </div>
+  const [loading, setLoading] =
+    useState(false)
 
-      {/* Add Batch Form */}
-      {showForm && (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 mb-6">
-          <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Create New Batch</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const submit = async () => {
+    try {
+      setLoading(true)
+
+      if (batch?.id) {
+        await updateBatch(batch.id, form)
+      } else {
+        await createBatch(form)
+      }
+
+      onSaved()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-6 py-5 border-b">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {batch
+                ? 'Edit Batch'
+                : 'Create Batch'}
+            </h2>
+
+            <p className="text-sm text-gray-500 mt-1">
+              Manage your poultry batch
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* BODY */}
+        <div className="p-6 space-y-5">
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Batch Name
+            </label>
+
             <input
               type="text"
               name="name"
-              placeholder="Batch name (e.g., Batch-001)"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="col-span-2 px-4 py-2 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
+              placeholder="Batch #1"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
             />
-            <input
-              type="text"
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Breed
+            </label>
+
+            <select
               name="breed"
-              placeholder="Breed (e.g., Layers, Broilers)"
-              value={formData.breed}
-              onChange={handleInputChange}
-              className="px-4 py-2 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-            <input
-              type="text"
-              name="housing_unit"
-              placeholder="Housing Unit"
-              value={formData.housing_unit}
-              onChange={handleInputChange}
-              className="px-4 py-2 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <input
-              type="number"
-              name="initial_count"
-              placeholder="Initial count"
-              value={formData.initial_count}
-              onChange={handleInputChange}
-              className="px-4 py-2 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-            <input
-              type="number"
-              name="current_count"
-              placeholder="Current count"
-              value={formData.current_count}
-              onChange={handleInputChange}
-              className="px-4 py-2 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-            <input
-              type="date"
-              name="start_date"
-              value={formData.start_date}
-              onChange={handleInputChange}
-              className="px-4 py-2 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-            <div className="col-span-2 flex gap-3">
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-semibold transition-all duration-200"
-              >
-                Create Batch
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="flex-1 px-4 py-2 rounded-lg bg-slate-500/20 hover:bg-slate-500/30 text-slate-400 font-semibold transition-all duration-200"
-              >
-                Cancel
-              </button>
+              value={form.breed}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+            >
+              {BREEDS.map((breed) => (
+                <option
+                  key={breed}
+                  value={breed}
+                >
+                  {breed}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Initial Count
+              </label>
+
+              <input
+                type="number"
+                name="initial_count"
+                value={form.initial_count}
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+              />
             </div>
-          </form>
-        </div>
-      )}
 
-      {/* Batches Grid */}
-      {batches.length === 0 ? (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-12 text-center">
-          <Clock className="w-12 h-12 text-slate-500 mx-auto mb-3 opacity-50" />
-          <p className="text-slate-500 text-lg">No batches yet. Create your first batch to get started.</p>
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Current Count
+              </label>
+
+              <input
+                type="number"
+                name="current_count"
+                value={form.current_count}
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Purchase Cost
+            </label>
+
+            <input
+              type="number"
+              name="purchase_cost"
+              value={form.purchase_cost}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Start Date
+              </label>
+
+              <input
+                type="date"
+                name="start_date"
+                value={form.start_date}
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                End Date
+              </label>
+
+              <input
+                type="date"
+                name="end_date"
+                value={form.end_date || ''}
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Status
+            </label>
+
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="active">
+                Active
+              </option>
+
+              <option value="harvested">
+                Harvested
+              </option>
+
+              <option value="closed">
+                Closed
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Notes
+            </label>
+
+            <textarea
+              rows={4}
+              name="notes"
+              value={form.notes}
+              onChange={handleChange}
+              placeholder="Additional notes..."
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none resize-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <button
+            onClick={submit}
+            disabled={loading}
+            className="w-full bg-green-600 hover:bg-green-700 text-white rounded-2xl py-3 font-semibold transition"
+          >
+            {loading
+              ? 'Saving...'
+              : batch
+              ? 'Update Batch'
+              : 'Create Batch'}
+          </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {batches.map(batch => (
-            <div key={batch.id} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 hover:border-green-500/50 transition-all duration-200">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-bold text-[var(--text-primary)]">{batch.name}</h3>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-500/20">
-                      {getStatusIcon(batch.status)}
-                      <span className="text-xs font-semibold text-slate-400 capitalize">{batch.status}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-500 mt-1">Breed: <span className="text-slate-400 capitalize">{batch.breed}</span></p>
-                </div>
-                <div className="flex gap-2">
-                  <button className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 transition-all duration-200">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(batch.id)}
-                    className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-all duration-200"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+      </div>
+    </div>
+  )
+}
+
+const LogsDrawer = ({
+  batch,
+  onClose,
+}) => {
+  const [logs, setLogs] = useState([])
+
+  useEffect(() => {
+    getDailyLogs(batch.id)
+      .then((res) =>
+        setLogs(res.data)
+      )
+      .catch((err) =>
+        console.error(err)
+      )
+  }, [batch.id])
+
+  return (
+    <div className="fixed inset-0 bg-black/20 z-50 flex justify-end">
+      <div className="bg-white w-full max-w-md h-full shadow-2xl overflow-y-auto">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-6 py-5 border-b">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Daily Logs
+            </h2>
+
+            <p className="text-sm text-gray-500 mt-1">
+              {batch.name}
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* BODY */}
+        <div className="p-6 space-y-4">
+          {logs.length === 0 && (
+            <div className="text-center py-12">
+              <ClipboardList
+                size={50}
+                className="mx-auto text-gray-300 mb-4"
+              />
+
+              <p className="text-gray-500">
+                No logs found
+              </p>
+            </div>
+          )}
+
+          {logs.map((log) => (
+            <div
+              key={log.id}
+              className="border rounded-2xl p-5"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800">
+                  {log.date}
+                </h3>
+
+                {log.deaths > 0 && (
+                  <span className="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full font-semibold">
+                    {log.deaths} deaths
+                  </span>
+                )}
               </div>
 
-              <div className="grid grid-cols-4 gap-4">
-                <div className="p-3 rounded-lg bg-slate-500/10">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Starting Count</p>
-                  <p className="text-xl font-bold text-[var(--text-primary)] mt-1">{batch.initial_count}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-500/10">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Current Count</p>
-                  <p className="text-xl font-bold text-[var(--text-primary)] mt-1">{batch.current_count}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-500/10">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Mortality Rate</p>
-                  <p className={`text-xl font-bold mt-1 ${(batch.mortality_percentage ?? 0) > 5 ? 'text-red-400' : 'text-green-400'}`}>
-                    {batch.mortality_percentage ?? 0}%
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-500/10">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Started</p>
-                  <p className="text-sm font-semibold text-[var(--text-primary)] mt-1">{batch.start_date}</p>
-                </div>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>
+                  Feed Consumed:{' '}
+                  <span className="font-semibold">
+                    {
+                      log.feed_consumed_kg
+                    }{' '}
+                    kg
+                  </span>
+                </p>
+
+                <p>
+                  Avg Weight:{' '}
+                  <span className="font-semibold">
+                    {
+                      log.average_weight_kg
+                    }{' '}
+                    kg
+                  </span>
+                </p>
               </div>
 
-              {batch.housing_unit && (
-                <div className="mt-4 pt-4 border-t border-[var(--border)]">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Housing Unit: <span className="text-slate-400">{batch.housing_unit}</span></p>
+              {log.notes && (
+                <div className="mt-4 text-sm text-gray-500 italic border-t pt-3">
+                  {log.notes}
                 </div>
               )}
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+const Batches = () => {
+  const [batches, setBatches] =
+    useState([])
+
+  const [loading, setLoading] =
+    useState(true)
+
+  const [modal, setModal] =
+    useState(null)
+
+  const [logsBatch, setLogsBatch] =
+    useState(null)
+
+  const fetchBatches = async () => {
+    try {
+      setLoading(true)
+
+      const res = await getBatches()
+
+      setBatches(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchBatches()
+  }, [])
+
+  const removeBatch = async (id) => {
+    const confirmDelete =
+      window.confirm(
+        'Delete this batch permanently?'
+      )
+
+    if (!confirmDelete) return
+
+    try {
+      await deleteBatch(id)
+      fetchBatches()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Poultry Batches
+          </h1>
+
+          <p className="text-gray-500 mt-2">
+            Manage and track your
+            poultry farming batches
+          </p>
+        </div>
+
+        <button
+          onClick={() => setModal({})}
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-2xl font-semibold flex items-center gap-2 shadow-lg"
+        >
+          <Plus size={20} />
+          New Batch
+        </button>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-3 gap-5 mb-8">
+        <div className="bg-white rounded-3xl p-6 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">
+                Total Batches
+              </p>
+
+              <h2 className="text-4xl font-bold text-gray-800 mt-3">
+                {batches.length}
+              </h2>
+            </div>
+
+            <div className="bg-green-100 p-4 rounded-2xl">
+              <Egg
+                className="text-green-600"
+                size={28}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">
+                Active Batches
+              </p>
+
+              <h2 className="text-4xl font-bold text-green-600 mt-3">
+                {
+                  batches.filter(
+                    (b) =>
+                      b.status ===
+                      'active'
+                  ).length
+                }
+              </h2>
+            </div>
+
+            <div className="bg-blue-100 p-4 rounded-2xl">
+              <Bird
+                className="text-blue-600"
+                size={28}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">
+                Total Birds
+              </p>
+
+              <h2 className="text-4xl font-bold text-orange-600 mt-3">
+                {batches.reduce(
+                  (sum, batch) =>
+                    sum +
+                    batch.current_count,
+                  0
+                )}
+              </h2>
+            </div>
+
+            <div className="bg-orange-100 p-4 rounded-2xl">
+              <Activity
+                className="text-orange-600"
+                size={28}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TABLE */}
+      <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b">
+            <tr>
+              <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                Batch
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                Breed
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                Birds
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                Mortality
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                Status
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {!loading &&
+              batches.map((batch) => (
+                <tr
+                  key={batch.id}
+                  className="border-b hover:bg-gray-50 transition"
+                >
+                  <td className="px-6 py-5">
+                    <div>
+                      <h3 className="font-bold text-gray-800">
+                        {batch.name}
+                      </h3>
+
+                      <p className="text-sm text-gray-500 mt-1">
+                        Started:{' '}
+                        {
+                          batch.start_date
+                        }
+                      </p>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 capitalize text-gray-700">
+                    {batch.breed}
+                  </td>
+
+                  <td className="px-6 py-5 font-semibold text-gray-800">
+                    {
+                      batch.current_count
+                    }
+                  </td>
+
+                  <td className="px-6 py-5 text-gray-700">
+                    {
+                      batch.mortality_percentage
+                    }
+                    %
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[batch.status]}`}
+                    >
+                      {batch.status}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          setLogsBatch(
+                            batch
+                          )
+                        }
+                        className="text-blue-600 hover:bg-blue-50 p-2 rounded-xl transition"
+                      >
+                        <ClipboardList
+                          size={18}
+                        />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          setModal(batch)
+                        }
+                        className="text-green-600 hover:bg-green-50 p-2 rounded-xl transition"
+                      >
+                        <Pencil
+                          size={18}
+                        />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          removeBatch(
+                            batch.id
+                          )
+                        }
+                        className="text-red-600 hover:bg-red-50 p-2 rounded-xl transition"
+                      >
+                        <Trash2
+                          size={18}
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODALS */}
+      {modal !== null && (
+        <BatchModal
+          batch={
+            modal.id
+              ? modal
+              : null
+          }
+          onClose={() =>
+            setModal(null)
+          }
+          onSaved={() => {
+            setModal(null)
+            fetchBatches()
+          }}
+        />
+      )}
+
+      {logsBatch && (
+        <LogsDrawer
+          batch={logsBatch}
+          onClose={() =>
+            setLogsBatch(null)
+          }
+        />
       )}
     </div>
   )
 }
+
+export default Batches

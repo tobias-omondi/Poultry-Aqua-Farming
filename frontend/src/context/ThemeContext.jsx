@@ -3,10 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 const ThemeContext = createContext()
 
 export function ThemeProvider({ children }) {
-  const [dark, setDark] = useState(() => {
-    const stored = localStorage.getItem('farmflow-theme')
-    return stored === 'dark' ? true : false
-  })
+  const [dark, setDark] = useState(false)
 
   useEffect(() => {
     if (dark) {
