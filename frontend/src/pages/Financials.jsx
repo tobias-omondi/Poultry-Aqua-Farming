@@ -1,627 +1,231 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { Plus, Trash2, TrendingUp, TrendingDown, Wallet, X } from 'lucide-react'
+import { getCosts, getSales, createCost, createSale, deleteCost, deleteSale, getBatches } from '../api/index'
 
-import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  Plus,
-  X,
-  Trash2,
-} from 'lucide-react'
+const CATEGORIES = ['feed', 'medication', 'labour', 'equipment', 'utilities', 'transport', 'other']
+const inp = "w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-green-500 transition-colors placeholder:text-slate-600"
 
-import {
-  getCosts,
-  getSales,
-  createCost,
-  createSale,
-  deleteCost,
-  deleteSale,
-  getBatches,
-} from '../api'
-
-const COST_CATEGORIES = [
-  'feed',
-  'medication',
-  'labour',
-  'equipment',
-  'utilities',
-  'transport',
-  'other',
-]
-
-const EMPTY_COST = {
-  batch: '',
-  category: 'feed',
-  description: '',
-  amount: '',
-  date: '',
-}
-
-const EMPTY_SALE = {
-  batch: '',
-  description: '',
-  amount: '',
-  buyer_name: '',
-  date: '',
-}
-
-const FinancialModal = ({
-  type,
-  batches,
-  onClose,
-  onSaved,
-}) => {
-  const [loading, setLoading] =
-    useState(false)
-
-  const [form, setForm] = useState(
-    type === 'cost'
-      ? EMPTY_COST
-      : EMPTY_SALE
-  )
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    })
-  }
-
-  const submit = async () => {
-    try {
-      setLoading(true)
-
-      if (type === 'cost') {
-        await createCost(form)
-      } else {
-        await createSale(form)
-      }
-
-      onSaved()
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+function F({ label, children }) {
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
-        {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-5 border-b">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {type === 'cost'
-                ? 'Add Expense'
-                : 'Add Sale'}
-            </h2>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">{label}</label>
+      {children}
+    </div>
+  )
+}
 
-            <p className="text-sm text-gray-500 mt-1">
-              Record a financial
-              transaction
-            </p>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X size={22} />
-          </button>
+function Modal({ title, onClose, children }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl w-full max-w-lg shadow-2xl">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-[var(--border)]">
+          <h2 className="text-base font-bold text-[var(--text-primary)]">{title}</h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-[var(--text-primary)] text-2xl leading-none cursor-pointer bg-transparent border-none">×</button>
         </div>
-
-        {/* BODY */}
-        <div className="p-6 space-y-5">
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Batch
-            </label>
-
-            <select
-              name="batch"
-              value={form.batch}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">
-                General Farm Expense
-              </option>
-
-              {batches.map((batch) => (
-                <option
-                  key={batch.id}
-                  value={batch.id}
-                >
-                  {batch.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {type === 'cost' && (
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-2">
-                Category
-              </label>
-
-              <select
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-              >
-                {COST_CATEGORIES.map(
-                  (category) => (
-                    <option
-                      key={category}
-                      value={category}
-                    >
-                      {category}
-                    </option>
-                  )
-                )}
-              </select>
-            </div>
-          )}
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Description
-            </label>
-
-            <input
-              type="text"
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Description..."
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Amount (KES)
-            </label>
-
-            <input
-              type="number"
-              name="amount"
-              value={form.amount}
-              onChange={handleChange}
-              placeholder="0.00"
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-            />
-          </div>
-
-          {type === 'sale' && (
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-2">
-                Buyer Name
-              </label>
-
-              <input
-                type="text"
-                name="buyer_name"
-                value={form.buyer_name}
-                onChange={handleChange}
-                placeholder="Buyer..."
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Date
-            </label>
-
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3"
-            />
-          </div>
-
-          <button
-            onClick={submit}
-            disabled={loading}
-            className={`w-full text-white py-3 rounded-2xl font-semibold transition ${
-              type === 'cost'
-                ? 'bg-red-500 hover:bg-red-600'
-                : 'bg-green-600 hover:bg-green-700'
-            }`}
-          >
-            {loading
-              ? 'Saving...'
-              : type === 'cost'
-              ? 'Save Expense'
-              : 'Save Sale'}
-          </button>
-        </div>
+        <div className="px-6 py-5">{children}</div>
       </div>
     </div>
+  )
+}
+
+function TransactionForm({ type, batches, onSave, onClose, saving }) {
+  const [form, setForm] = useState(type === 'cost'
+    ? { batch: '', category: 'feed', description: '', amount: '', date: '' }
+    : { batch: '', description: '', amount: '', buyer_name: '', date: '' }
+  )
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  return (
+    <form onSubmit={e => { e.preventDefault(); onSave(form) }} className="flex flex-col gap-4">
+      <F label="Batch">
+        <select className={inp} value={form.batch} onChange={e => set('batch', e.target.value)}>
+          <option value="">General Farm (no batch)</option>
+          {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+        </select>
+      </F>
+      {type === 'cost' && (
+        <F label="Category">
+          <select className={inp} value={form.category} onChange={e => set('category', e.target.value)}>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+          </select>
+        </F>
+      )}
+      <F label="Description"><input className={inp} value={form.description} onChange={e => set('description', e.target.value)} placeholder="Description..." required /></F>
+      <div className="grid grid-cols-2 gap-4">
+        <F label="Amount (KES)"><input className={inp} type="number" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0" required /></F>
+        <F label="Date"><input className={inp} type="date" value={form.date} onChange={e => set('date', e.target.value)} required /></F>
+      </div>
+      {type === 'sale' && <F label="Buyer Name"><input className={inp} value={form.buyer_name} onChange={e => set('buyer_name', e.target.value)} placeholder="Buyer name..." /></F>}
+      <div className="flex gap-3 pt-1">
+        <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-slate-400 text-sm font-semibold cursor-pointer bg-transparent">Cancel</button>
+        <button type="submit" disabled={saving}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors cursor-pointer border-none disabled:opacity-50 ${type === 'cost' ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-green-500 text-black hover:bg-green-400'}`}>
+          {saving ? 'Saving...' : type === 'cost' ? 'Save Expense' : 'Save Sale'}
+        </button>
+      </div>
+    </form>
   )
 }
 
 export default function Financials() {
   const [costs, setCosts] = useState([])
   const [sales, setSales] = useState([])
-  const [batches, setBatches] =
-    useState([])
+  const [batches, setBatches] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [tab, setTab] = useState('expenses')
 
-  const [loading, setLoading] =
-    useState(true)
+  const load = () => {
+    setLoading(true)
+    Promise.all([getCosts(), getSales(), getBatches()]).then(([c, s, b]) => {
+      setCosts(c.data); setSales(s.data); setBatches(b.data)
+    }).finally(() => setLoading(false))
+  }
+  useEffect(() => { load() }, [])
 
-  const [modal, setModal] =
-    useState(null)
+  const totalExpenses = useMemo(() => costs.reduce((a, c) => a + Number(c.amount), 0), [costs])
+  const totalSales = useMemo(() => sales.reduce((a, s) => a + Number(s.amount), 0), [sales])
+  const profit = totalSales - totalExpenses
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-
-      const [
-        costsRes,
-        salesRes,
-        batchesRes,
-      ] = await Promise.all([
-        getCosts(),
-        getSales(),
-        getBatches(),
-      ])
-
-      setCosts(costsRes.data)
-      setSales(salesRes.data)
-      setBatches(batchesRes.data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+  const handleSave = (form) => {
+    setSaving(true)
+    const fn = modal === 'cost' ? createCost : createSale
+    fn(form).then(() => { setModal(null); load() }).finally(() => setSaving(false))
   }
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  const handleDeleteCost = (id) => { if (window.confirm('Delete this expense?')) deleteCost(id).then(load) }
+  const handleDeleteSale = (id) => { if (window.confirm('Delete this sale?')) deleteSale(id).then(load) }
 
-  const totalExpenses = useMemo(() => {
-    return costs.reduce(
-      (sum, cost) =>
-        sum + Number(cost.amount),
-      0
-    )
-  }, [costs])
-
-  const totalSales = useMemo(() => {
-    return sales.reduce(
-      (sum, sale) =>
-        sum + Number(sale.amount),
-      0
-    )
-  }, [sales])
-
-  const profit =
-    totalSales - totalExpenses
-
-  const removeCost = async (id) => {
-    const confirmDelete =
-      window.confirm(
-        'Delete this expense?'
-      )
-
-    if (!confirmDelete) return
-
-    try {
-      await deleteCost(id)
-      fetchData()
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const removeSale = async (id) => {
-    const confirmDelete =
-      window.confirm(
-        'Delete this sale?'
-      )
-
-    if (!confirmDelete) return
-
-    try {
-      await deleteSale(id)
-      fetchData()
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  const catColor = (cat) => ({
+    feed: 'bg-amber-500/20 text-amber-400',
+    medication: 'bg-blue-500/20 text-blue-400',
+    labour: 'bg-purple-500/20 text-purple-400',
+    equipment: 'bg-slate-500/20 text-slate-400',
+    utilities: 'bg-cyan-500/20 text-cyan-400',
+    transport: 'bg-orange-500/20 text-orange-400',
+    other: 'bg-slate-500/20 text-slate-400',
+  }[cat] ?? 'bg-slate-500/20 text-slate-400')
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-[1100px]">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Financials
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Track expenses, sales,
-            and farm profits
-          </p>
+          <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Financials</h1>
+          <p className="text-slate-500 text-sm mt-1">Track expenses, sales and farm profits</p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() =>
-              setModal('cost')
-            }
-            className="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-2xl font-semibold flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Expense
+        <div className="flex gap-2">
+          <button onClick={() => setModal('cost')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500/30 transition-colors cursor-pointer border-none">
+            <Plus className="w-4 h-4" /> Expense
           </button>
-
-          <button
-            onClick={() =>
-              setModal('sale')
-            }
-            className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-2xl font-semibold flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Sale
+          <button onClick={() => setModal('sale')} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 text-black text-sm font-bold hover:bg-green-400 transition-colors cursor-pointer border-none">
+            <Plus className="w-4 h-4" /> Sale
           </button>
         </div>
       </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-3 gap-5 mb-8">
-        <div className="bg-white rounded-3xl p-6 border shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">
-                Total Sales
-              </p>
-
-              <h2 className="text-4xl font-bold text-green-600 mt-3">
-                KES{' '}
-                {totalSales.toLocaleString()}
-              </h2>
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Total Sales', value: `KES ${totalSales.toLocaleString()}`, icon: <TrendingUp className="w-5 h-5" />, color: 'text-green-400', iconBg: 'bg-green-500/20 text-green-400' },
+          { label: 'Total Expenses', value: `KES ${totalExpenses.toLocaleString()}`, icon: <TrendingDown className="w-5 h-5" />, color: 'text-red-400', iconBg: 'bg-red-500/20 text-red-400' },
+          { label: 'Net Profit', value: `KES ${profit.toLocaleString()}`, icon: <Wallet className="w-5 h-5" />, color: profit >= 0 ? 'text-green-400' : 'text-red-400', iconBg: 'bg-blue-500/20 text-blue-400' },
+        ].map((s, i) => (
+          <div key={i} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">{s.label}</span>
+              <span className={`p-2 rounded-xl ${s.iconBg}`}>{s.icon}</span>
             </div>
-
-            <div className="bg-green-100 p-4 rounded-2xl">
-              <TrendingUp
-                size={28}
-                className="text-green-600"
-              />
-            </div>
+            <div className={`text-2xl font-extrabold tracking-tight ${s.color}`}>{s.value}</div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-3xl p-6 border shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">
-                Total Expenses
-              </p>
-
-              <h2 className="text-4xl font-bold text-red-500 mt-3">
-                KES{' '}
-                {totalExpenses.toLocaleString()}
-              </h2>
-            </div>
-
-            <div className="bg-red-100 p-4 rounded-2xl">
-              <TrendingDown
-                size={28}
-                className="text-red-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl p-6 border shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">
-                Net Profit
-              </p>
-
-              <h2
-                className={`text-4xl font-bold mt-3 ${
-                  profit >= 0
-                    ? 'text-blue-600'
-                    : 'text-red-500'
-                }`}
-              >
-                KES{' '}
-                {profit.toLocaleString()}
-              </h2>
-            </div>
-
-            <div className="bg-blue-100 p-4 rounded-2xl">
-              <Wallet
-                size={28}
-                className="text-blue-600"
-              />
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* EXPENSES */}
-      <div className="bg-white rounded-3xl border shadow-sm mb-8 overflow-hidden">
-        <div className="px-6 py-5 border-b">
-          <h2 className="text-xl font-bold text-gray-800">
-            Expenses
-          </h2>
-        </div>
-
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="text-left px-6 py-4">
-                Category
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Description
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Amount
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Date
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {!loading &&
-              costs.map((cost) => (
-                <tr
-                  key={cost.id}
-                  className="border-b hover:bg-gray-50"
-                >
-                  <td className="px-6 py-4 capitalize">
-                    {cost.category}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {cost.description}
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-red-500">
-                    KES {cost.amount}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {cost.date}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() =>
-                        removeCost(
-                          cost.id
-                        )
-                      }
-                      className="text-red-500 hover:bg-red-50 p-2 rounded-xl"
-                    >
-                      <Trash2
-                        size={18}
-                      />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-5">
+        {['expenses', 'sales'].map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-5 py-2 rounded-xl text-sm font-semibold capitalize transition-all cursor-pointer border-none
+              ${tab === t ? 'bg-green-500 text-black' : 'bg-[var(--bg-card)] border border-[var(--border)] text-slate-400 hover:text-[var(--text-primary)]'}`}>
+            {t} <span className="opacity-60 ml-1">({t === 'expenses' ? costs.length : sales.length})</span>
+          </button>
+        ))}
       </div>
 
-      {/* SALES */}
-      <div className="bg-white rounded-3xl border shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b">
-          <h2 className="text-xl font-bold text-gray-800">
-            Sales
-          </h2>
-        </div>
-
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="text-left px-6 py-4">
-                Description
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Buyer
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Amount
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Date
-              </th>
-
-              <th className="text-left px-6 py-4">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {!loading &&
-              sales.map((sale) => (
-                <tr
-                  key={sale.id}
-                  className="border-b hover:bg-gray-50"
-                >
-                  <td className="px-6 py-4">
-                    {
-                      sale.description
-                    }
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {
-                      sale.buyer_name
-                    }
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-green-600">
-                    KES {sale.amount}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {sale.date}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() =>
-                        removeSale(
-                          sale.id
-                        )
-                      }
-                      className="text-red-500 hover:bg-red-50 p-2 rounded-xl"
-                    >
-                      <Trash2
-                        size={18}
-                      />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+      {/* Table */}
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden">
+        {tab === 'expenses' ? (
+          <>
+            <div className="px-6 py-4 border-b border-[var(--border)]">
+              <h2 className="text-sm font-bold text-[var(--text-primary)]">Expenses</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    {['Category', 'Description', 'Batch', 'Amount', 'Date', ''].map(h => (
+                      <th key={h} className="text-left text-[10px] text-slate-500 uppercase tracking-widest px-5 py-3 font-semibold border-b border-[var(--border)]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {!loading && costs.map(c => (
+                    <tr key={c.id} className="border-b border-[var(--border)] hover:bg-white/5 transition-colors">
+                      <td className="px-5 py-3.5"><span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold capitalize ${catColor(c.category)}`}>{c.category}</span></td>
+                      <td className="px-5 py-3.5 text-sm text-[var(--text-primary)]">{c.description}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-500">{c.batch ?? '—'}</td>
+                      <td className="px-5 py-3.5 text-sm font-bold text-red-400">KES {Number(c.amount).toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-xs text-slate-500">{c.date}</td>
+                      <td className="px-5 py-3.5">
+                        <button onClick={() => handleDeleteCost(c.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer border-none"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {!loading && costs.length === 0 && <div className="text-center py-12 text-slate-500 text-sm">No expenses yet.</div>}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="px-6 py-4 border-b border-[var(--border)]">
+              <h2 className="text-sm font-bold text-[var(--text-primary)]">Sales</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    {['Description', 'Buyer', 'Batch', 'Amount', 'Date', ''].map(h => (
+                      <th key={h} className="text-left text-[10px] text-slate-500 uppercase tracking-widest px-5 py-3 font-semibold border-b border-[var(--border)]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {!loading && sales.map(s => (
+                    <tr key={s.id} className="border-b border-[var(--border)] hover:bg-white/5 transition-colors">
+                      <td className="px-5 py-3.5 text-sm text-[var(--text-primary)]">{s.description}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-400">{s.buyer_name || '—'}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-500">{s.batch ?? '—'}</td>
+                      <td className="px-5 py-3.5 text-sm font-bold text-green-400">KES {Number(s.amount).toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-xs text-slate-500">{s.date}</td>
+                      <td className="px-5 py-3.5">
+                        <button onClick={() => handleDeleteSale(s.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer border-none"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {!loading && sales.length === 0 && <div className="text-center py-12 text-slate-500 text-sm">No sales yet.</div>}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* MODAL */}
-      {modal && (
-        <FinancialModal
-          type={modal}
-          batches={batches}
-          onClose={() =>
-            setModal(null)
-          }
-          onSaved={() => {
-            setModal(null)
-            fetchData()
-          }}
-        />
-      )}
+      {modal && <Modal title={modal === 'cost' ? 'Add Expense' : 'Add Sale'} onClose={() => setModal(null)}>
+        <TransactionForm type={modal} batches={batches} onSave={handleSave} onClose={() => setModal(null)} saving={saving} />
+      </Modal>}
     </div>
   )
 }

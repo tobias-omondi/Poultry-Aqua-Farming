@@ -192,3 +192,6 @@ export const deleteSupplier = (id) =>
 
 export const getHouses = () =>
   API.get('/housing/')
+export const createHouse = (data) => API.post('/housing/', data)
+export const deleteHouse = (id) => API.delete(`/housing/${id}/`)
+export const updateHouse = (id, data) => API.patch(`/housing/${id}/`, data)
