@@ -9,4 +9,6 @@ urlpatterns = [
     path('refresh/', views.refresh_view, name='refresh'),
     path('me/', views.me_view, name='me'),
     path('verify/', TokenVerifyView.as_view(), name='verify'),
+    path('cookies/consent/', views.cookie_consent_view, name='cookie-consent'),
+    path('cookies/status/', views.cookie_consent_status, name='cookie-status'),
 ]

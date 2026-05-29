@@ -35,3 +35,61 @@ def create_profile(sender, instance, created, **kwargs):
 def save_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+
+class CookieConsent(models.Model):
+    CONSENT_CHOICES = [
+        ('accepted', 'Accepted All'),
+        ('essential', 'Essential Only'),
+        ('declined', 'Declined'),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cookie_consent',
+        null=True,
+        blank=True,
+    )
+    session_key = models.CharField(max_length=100, blank=True)
+    consent = models.CharField(max_length=20, choices=CONSENT_CHOICES)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Cookie Consent'
+        verbose_name_plural = 'Cookie Consents'
+
+    def __str__(self):
+        identifier = self.user.username if self.user else f'anon-{self.session_key[:8]}'
+        return f"{identifier} — {self.consent} ({self.created_at.date()})"
+
+
+class CookieConsent(models.Model):
+    CONSENT_CHOICES = [
+        ('accepted', 'Accepted All'),
+        ('essential', 'Essential Only'),
+        ('declined', 'Declined'),
+    ]
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        related_name='cookie_consent',
+        null=True, blank=True  # null = anonymous visitor
+    )
+    session_key = models.CharField(max_length=100, blank=True)  # for anonymous users
+    consent = models.CharField(max_length=20, choices=CONSENT_CHOICES)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Cookie Consent'
+        verbose_name_plural = 'Cookie Consents'
+
+    def __str__(self):
+        identifier = self.user.username if self.user else f'anon-{self.session_key[:8]}'
+        return f"{identifier} — {self.consent} ({self.created_at.date()})"
