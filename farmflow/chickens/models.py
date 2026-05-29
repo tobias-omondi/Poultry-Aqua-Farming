@@ -25,15 +25,20 @@ class Batch(models.Model):
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return f"{self.name} ({self.breed}) — {self.status}"
+    
     def mortality_percentage(self):
+        if self.initial_count is None or self.current_count is None:
+            return 0
         deaths = self.initial_count - self.current_count
         return round((deaths / self.initial_count) * 100, 2)
 
     def total_deaths(self):
+        if self.initial_count is None or self.current_count is None:
+            return 0
         return self.initial_count - self.current_count
-
-    def __str__(self):
-        return f"{self.name} ({self.breed}) — {self.status}"
 
 
 class DailyLog(models.Model):
@@ -64,7 +69,9 @@ class Harvest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def total_revenue(self):
-        return round(self.total_weight_kg * self.price_per_kg, 2)
+        if self.total_weight_kg and self.price_per_kg:
+            return round(self.total_weight_kg * self.price_per_kg, 2)
+        return 0
 
     def __str__(self):
         return f"Harvest — {self.batch.name} on {self.date}"

@@ -1,11 +1,13 @@
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .models import Batch, DailyLog, Harvest
 from .serializers import BatchSerializer, BatchListSerializer, DailyLogSerializer, HarvestSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 class BatchListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Batch.objects.all().order_by('-start_date')
 
     def get_serializer_class(self):
@@ -15,11 +17,13 @@ class BatchListCreateView(generics.ListCreateAPIView):
 
 
 class BatchDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Batch.objects.all()
     serializer_class = BatchSerializer
 
 
 class DailyLogListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DailyLogSerializer
 
     def get_queryset(self):
@@ -28,21 +32,25 @@ class DailyLogListCreateView(generics.ListCreateAPIView):
 
 
 class DailyLogDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = DailyLog.objects.all()
     serializer_class = DailyLogSerializer
 
 
 class HarvestCreateView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Harvest.objects.all()
     serializer_class = HarvestSerializer
 
 
 class HarvestDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Harvest.objects.all()
     serializer_class = HarvestSerializer
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def batch_summary(request, pk):
     """Returns full P&L summary for a single batch."""
     try:
