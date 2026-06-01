@@ -1,11 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react'
 import './LandingPage.css'
 import { Egg, Leaf, Beef, TrendingUp, BarChart3, PieChart } from 'lucide-react'
+import chicken from "/src/assets/chicken.jpg"
+import goat from "/src/assets/goat.jpg"
+import cow from "/src/assets/cow.jpg"
 
+// images
+
+const images = [
+  {image: chicken, label: "chicken farming"},
+  {image: goat, label: "goat farming"},
+  {image: cow, label: "cattle farming"},
+]
 // ── DATA ──────────────────────────────────────────────────────
 const FARM_TYPES = [
   {
-    emoji: '🐔',
+    image: chicken,
     name: 'Kienyeji Chicken',
     sub: 'Indigenous poultry farming',
     breeds: [
@@ -17,19 +27,7 @@ const FARM_TYPES = [
     count: '4 breeds',
   },
   {
-    emoji: '🐟',
-    name: 'Fish Farming',
-    sub: 'Freshwater aquaculture',
-    breeds: [
-      { name: 'Nile Tilapia', badge: 'Popular', type: 'popular' },
-      { name: 'African Catfish', badge: 'Profitable', type: 'profitable' },
-      { name: 'Rainbow Trout', badge: 'Premium', type: 'premium' },
-      { name: 'Black Tilapia', badge: 'Common', type: 'common' },
-    ],
-    count: '4 species',
-  },
-  {
-    emoji: '🐐',
+    image: goat,
     name: 'Goat Farming',
     sub: 'Meat & dairy goats',
     breeds: [
@@ -41,7 +39,7 @@ const FARM_TYPES = [
     count: '4 breeds',
   },
   {
-    emoji: '🐄',
+    image: cow,
     name: 'Cattle Farming',
     sub: 'Beef & dairy breeds',
     breeds: [
@@ -117,14 +115,6 @@ const TESTIMONIALS = [
     initials: 'AH',
     avatarClass: 'av-amber',
   },
-  {
-    stars: '★★★★★',
-    quote: '"I showed my FarmFlow reports to a microfinance institution and got a loan for my second pond. The evidence trail is real."',
-    name: 'Peter Ochieng',
-    role: 'Fish Farmer · Kisumu',
-    initials: 'PO',
-    avatarClass: 'av-forest',
-  },
 ]
 
 const MARQUEE_ITEMS = [
@@ -133,7 +123,6 @@ const MARQUEE_ITEMS = [
   { emoji: '📦', text: 'Inventory Alerts' },
   { emoji: '🏠', text: 'Housing Management' },
   { emoji: '🤖', text: 'AI Advisor' },
-  { emoji: '🐟', text: 'Fish Aquaculture' },
   { emoji: '🐐', text: 'Goat Management' },
   { emoji: '🐄', text: 'Cattle Tracking' },
   { emoji: '💰', text: 'Cost Analytics' },
@@ -225,7 +214,7 @@ function Hero() {
         <p className="hero-desc">
           FarmFlow gives Kenyan farmers real-time P&L, batch lifecycle
           tracking, inventory alerts, and an AI advisor — covering chickens,
-          fish, goats, and cattle across all breeds.
+          goats, and cattle across all breeds.
         </p>
 
         <div className="hero-cta">
@@ -309,8 +298,9 @@ function FarmTypes() {
           Every animal. Every <em>breed.</em>
         </h2>
         <p className="section-sub">
-          FarmFlow supports all major livestock types found across Kenya —
-          with breed-specific tracking, cost parameters, and benchmarks.
+          Built for Kenya’s livestock sector, FarmFlow tracks poultry, goats, and
+          cattle with breed-aware cost models, performance benchmarks, and
+          precision reporting.
         </p>
       </div>
 
@@ -318,7 +308,9 @@ function FarmTypes() {
         {FARM_TYPES.map((farm, i) => (
           <div className={`farm-type-card reveal reveal-delay-${i % 3}`} key={farm.name}>
             <div className="ftc-header">
-              <div className="ftc-emoji">{farm.emoji}</div>
+              <div className="ftc-image-wrap">
+                <img src={farm.image} alt={farm.name} className="ftc-image" />
+              </div>
               <div className="ftc-title">{farm.name}</div>
               <div className="ftc-sub">{farm.sub}</div>
             </div>
@@ -447,11 +439,10 @@ function Financials() {
             </div>
             <div className="dash-batches">
               {[
-                { name: 'Batch #3', breed: 'Kenbro', profit: '+18,400', status: 'active' },
-                { name: 'Tilapia A', breed: 'Nile Tilapia', profit: '+12,700', status: 'active' },
-                { name: 'Batch #2', breed: 'Kienyeji', profit: '+9,200', status: 'closed' },
-                { name: 'Boer Herd', breed: 'Boer Goat', profit: '+6,800', status: 'active' },
-              ].map(row => (
+                  { name: 'Batch #3', breed: 'Kenbro', profit: '+18,400', status: 'active' },
+                  { name: 'Batch #2', breed: 'Kienyeji', profit: '+9,200', status: 'closed' },
+                  { name: 'Boer Herd', breed: 'Boer Goat', profit: '+6,800', status: 'active' },
+                ].map(row => (
                 <div className="db-row" key={row.name}>
                   <div>
                     <div className="db-name">{row.name}</div>
@@ -481,7 +472,7 @@ function Testimonials() {
           <em>across Kenya.</em>
         </h2>
         <p className="section-sub">
-          From broiler farmers in Kiambu to fish farmers in Kisumu —
+          From broiler farmers in Kiambu to smallholders across Kenya —
           real results from real farms.
         </p>
       </div>

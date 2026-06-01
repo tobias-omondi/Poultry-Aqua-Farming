@@ -599,8 +599,8 @@ img { max-width: 100%; }
 /* ── FARM TYPES SECTION ── */
 .farm-types-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
   margin-top: 56px;
 }
 
@@ -611,6 +611,7 @@ img { max-width: 100%; }
   overflow: hidden;
   transition: all 0.3s;
   cursor: pointer;
+  box-shadow: 0 10px 28px rgba(16,24,32,0.04);
 }
 
 .farm-type-card:hover {
