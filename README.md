@@ -98,6 +98,21 @@ Server runs at `http://127.0.0.1:8000/`
 
 ---
 
+---
+# FastApi for Anthropic AI Advisor
+## Install dependacies
+    pip install fastapi uvicorn anthropic httpx python-dotenv pydantic
+
+fastapi — the API framework
+uvicorn — ASGI server to run FastAPI
+anthropic — Claude API client
+httpx — async HTTP client to call Django APIs
+python-dotenv — for API keys
+pydantic — data validation
+
+# create .env
+    touch .env
+
 ## Roadmap
 
 ### Phase 1 — Chickens (current)
