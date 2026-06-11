@@ -4,6 +4,22 @@ const API = axios.create({
   baseURL: 'http://127.0.0.1:8000/api',
 })
 
+// Auth helpers
+export const setAuthToken = (token) => {
+  if (token) {
+    API.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  } else {
+    delete API.defaults.headers.common['Authorization']
+  }
+}
+
+export const login = (credentials) =>
+  API.post('/auth/login/', credentials)
+
+export const logout = () => {
+  setAuthToken(null)
+}
+
 /* =========================================================
    CHICKENS
 ========================================================= */

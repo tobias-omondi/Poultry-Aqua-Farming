@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { Menu, X, Sun, Moon } from 'lucide-react'
+import { logout as apiLogout, setAuthToken } from '../api'
 
 const links = [
   { to: '/', label: 'Overview', icon: '📊' },
@@ -14,6 +15,19 @@ const links = [
 export default function Sidebar() {
   const { dark, setDark } = useTheme()
   const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await apiLogout()
+    } catch (e) {
+      // ignore network errors on logout
+    }
+    localStorage.removeItem('ff_token')
+    sessionStorage.removeItem('ff_token')
+    setAuthToken(null)
+    navigate('/login', { replace: true })
+  }
 
   const navContent = (
     <>
@@ -54,6 +68,15 @@ export default function Sidebar() {
           {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           <span>{dark ? 'Light mode' : 'Dark mode'}</span>
         </button>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm transition-all duration-150 cursor-pointer bg-transparent mb-4"
+        >
+          <span className="text-base">🔒</span>
+          <span>Logout</span>
+        </button>
+
         <div className="text-[10px] text-slate-600 px-3">Phase 1 — Chickens</div>
       </div>
     </>
