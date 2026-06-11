@@ -79,7 +79,7 @@ export default function Inventory() {
   )
 
   return (
-    <div className="max-w-[1100px]">
+    <div className="max-w-[1100px] w-full mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
         <div>

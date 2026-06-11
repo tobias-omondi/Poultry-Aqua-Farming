@@ -145,7 +145,7 @@ export default function Dashboard() {
   })
 
   return (
-    <div className="max-w-[1200px]">
+    <div className="max-w-[1200px] w-full mx-auto">
 
       {/* Header */}
       <div className="flex justify-between items-start mb-8">
@@ -165,7 +165,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <StatCard label="Total Revenue" value={`KES ${Number(summary?.total_revenue ?? 0).toLocaleString()}`} sub="All sales combined" icon={<TrendingUp className="w-5 h-5" />} colorCls="text-green-400" />
         <StatCard label="Total Costs" value={`KES ${Number(summary?.total_costs ?? 0).toLocaleString()}`} sub="All expenses combined" icon={<TrendingDown className="w-5 h-5" />} colorCls="text-red-400" />
         <StatCard label="Net Profit" value={`KES ${Number(summary?.profit ?? 0).toLocaleString()}`} sub={summary?.is_profitable ? '▲ Profitable' : '▼ Running at loss'} icon={<DollarSign className="w-5 h-5" />} colorCls={(summary?.profit ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'} />
@@ -173,7 +173,7 @@ export default function Dashboard() {
       </div>
 
       {/* Chart + Calendar */}
-      <div className="grid grid-cols-[1fr_220px] gap-4 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-4 mb-5">
 
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-4">P&L Breakdown</p>
@@ -193,7 +193,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-4">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-3">Calendar</p>
             <MiniCalendar />
@@ -217,12 +217,12 @@ export default function Dashboard() {
 
       {/* Alerts */}
       {(alerts?.total_alerts ?? 0) > 0 && (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 mb-5">
+          <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 mb-5">
           <div className="flex items-center gap-2 mb-4">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Stock Alerts</p>
             <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold">{alerts.total_alerts} low</span>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {alerts?.low_feed?.map(f => (
               <div key={f.id} className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                 <div className="text-xs text-amber-400 font-semibold capitalize">{f.feed_type} feed</div>
@@ -242,7 +242,7 @@ export default function Dashboard() {
       )}
 
       {/* Batches + Buyers */}
-      <div className="grid grid-cols-[1.4fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
 
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-4">Active Batches</p>

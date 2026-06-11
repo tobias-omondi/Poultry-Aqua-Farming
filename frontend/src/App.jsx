@@ -14,10 +14,10 @@ function App() {
   const token = localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token')
   return (
     <BrowserRouter>
-      <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', display: 'flex' }}>
+      <div className="min-h-screen flex" style={{ background: 'var(--bg-primary)' }}>
         {/* Render Sidebar only when authenticated */}
         {token ? <Sidebar /> : null}
-        <main style={{ flex: 1, marginLeft: token ? 240 : 0, padding: 32 }}>
+        <main className="flex-1 ml-0 md:ml-60 p-4 md:p-8 pt-16 md:pt-0">
           <Routes>
             <Route path="/logout" element={<LogoutPage />} />
             <Route path="/login" element={<LoginPage />} />
