@@ -1,7 +1,10 @@
+from dotenv import load_dotenv
+load_dotenv() #load envitroment variables from .env file
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from services.weather import get_live_weather
+from services.advisor import generate_farm_advice
 
 app = FastAPI(
     title='FarmFlow AI Service',
@@ -33,3 +36,12 @@ async def check_farm_weather(coords: Coordinates):
     """
     weather_report = await get_live_weather(latitude=coords.latitude, longitude=coords.longitude)
     return weather_report
+
+@app.post("/api/v1/weather-check-with-advice")
+async def check_farm_weather_with_advice(coords: Coordinates):
+    weather_report = await get_live_weather(latitude = coords.latitude, longitude = coords.longitude)
+    advice = await generate_farm_advice(weather_report)
+    return {
+        "weather_report": weather_report,
+        "farm_advice": advice,
+    }
