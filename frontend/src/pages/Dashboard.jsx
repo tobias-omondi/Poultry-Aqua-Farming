@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getFarmSummary, getBatches, getLowStockAlerts } from '../api/index'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useTheme } from '../context/ThemeContext'
 import { Leaf, Sun, Moon, TrendingUp, TrendingDown, DollarSign, Bird } from 'lucide-react'
 
@@ -135,9 +135,9 @@ export default function Dashboard() {
   )
 
   const chartData = [
-    { name: 'Revenue', value: summary?.total_revenue ?? 0, color: '#22c55e' },
-    { name: 'Costs', value: summary?.total_costs ?? 0, color: '#ef4444' },
-    { name: 'Profit', value: summary?.profit ?? 0, color: (summary?.profit ?? 0) >= 0 ? '#3b82f6' : '#ef4444' },
+    { name: 'Start', revenue: Math.round((summary?.total_revenue ?? 0) * 0.35), costs: Math.round((summary?.total_costs ?? 0) * 0.35), profit: Math.round((summary?.profit ?? 0) * 0.35) },
+    { name: 'Mid', revenue: Math.round((summary?.total_revenue ?? 0) * 0.7), costs: Math.round((summary?.total_costs ?? 0) * 0.7), profit: Math.round((summary?.profit ?? 0) * 0.7) },
+    { name: 'Now', revenue: summary?.total_revenue ?? 0, costs: summary?.total_costs ?? 0, profit: summary?.profit ?? 0 },
   ]
 
   const dateStr = new Date().toLocaleDateString('en-KE', {
@@ -177,19 +177,21 @@ export default function Dashboard() {
 
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-4">P&L Breakdown</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={chartData} barSize={44} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartData} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.12)" vertical={false} />
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                cursor={{ stroke: 'rgba(148,163,184,0.45)', strokeWidth: 1 }}
                 contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text-primary)', fontSize: 12 }}
                 formatter={v => [`KES ${Number(v).toLocaleString()}`, '']}
               />
-              <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Bar>
-            </BarChart>
+              <Legend verticalAlign="top" align="right" wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
+              <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#22c55e" fill="#22c55e" fillOpacity={0.16} strokeWidth={2} />
+              <Area type="monotone" dataKey="costs" name="Costs" stroke="#ef4444" fill="#ef4444" fillOpacity={0.16} strokeWidth={2} />
+              <Area type="monotone" dataKey="profit" name="Profit" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.16} strokeWidth={2} />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 

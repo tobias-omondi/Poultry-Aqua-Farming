@@ -10,6 +10,9 @@ const links = [
   { to: '/financials', label: 'Financials', icon: '💰' },
   { to: '/inventory', label: 'Inventory', icon: '📦' },
   { to: '/housing', label: 'Housing', icon: '🏠' },
+  {to: '/FlowAi', label: 'Flow AI', icon: '🤖' },
+  {to: '/notifications', label: 'Notifications', icon: '🔔' },
+  {to: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export default function Sidebar() {
