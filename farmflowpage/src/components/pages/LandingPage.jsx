@@ -1,132 +1,124 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './LandingPage.css'
-import { Egg, Leaf, Beef, TrendingUp, BarChart3, PieChart } from 'lucide-react'
+import {
+  Layers, HeartPulse, BarChart3, Home, Wrench, TrendingUp,
+  Users, Wheat, Syringe, Thermometer, Egg, Leaf, Beef,
+} from 'lucide-react'
 import chicken from "/src/assets/chicken.jpg"
 import goat from "/src/assets/goat.jpg"
 import cow from "/src/assets/cow.jpg"
 
-// images
-
-const images = [
-  {image: chicken, label: "chicken farming"},
-  {image: goat, label: "goat farming"},
-  {image: cow, label: "cattle farming"},
-]
 // ── DATA ──────────────────────────────────────────────────────
-const FARM_TYPES = [
+const SPECIES = [
   {
+    code: 'SP-01 / POULTRY',
     image: chicken,
-    name: 'Kienyeji Chicken',
-    sub: 'Indigenous poultry farming',
-    breeds: [
-      { name: 'Kari Improved Kienyeji', badge: 'Popular', type: 'popular' },
-      { name: 'Rainbow Rooster', badge: 'Profitable', type: 'profitable' },
-      { name: 'Kenbro', badge: 'Premium', type: 'premium' },
-      { name: 'Indigenous Local', badge: 'Common', type: 'common' },
-    ],
-    count: '4 breeds',
+    name: 'Kienyeji & Broiler',
+    breeds: 'Kari Improved, Rainbow Rooster, Kenbro, Local Indigenous',
+    metricLabel: 'Tracked on',
+    metricValue: 'FCR & mortality',
   },
   {
+    code: 'SP-02 / GOATS',
     image: goat,
-    name: 'Goat Farming',
-    sub: 'Meat & dairy goats',
-    breeds: [
-      { name: 'Boer Goat', badge: 'Popular', type: 'popular' },
-      { name: 'Galla Goat', badge: 'Profitable', type: 'profitable' },
-      { name: 'Toggenburg', badge: 'Premium', type: 'premium' },
-      { name: 'Small East African', badge: 'Common', type: 'common' },
-    ],
-    count: '4 breeds',
+    name: 'Meat & Dairy Goats',
+    breeds: 'Boer, Galla, Toggenburg, Small East African',
+    metricLabel: 'Tracked on',
+    metricValue: 'Weight & breeding',
   },
   {
+    code: 'SP-03 / CATTLE',
     image: cow,
-    name: 'Cattle Farming',
-    sub: 'Beef & dairy breeds',
-    breeds: [
-      { name: 'Friesian', badge: 'Popular', type: 'popular' },
-      { name: 'Ayrshire', badge: 'Profitable', type: 'profitable' },
-      { name: 'Boran', badge: 'Premium', type: 'premium' },
-      { name: 'Zebu (Boran)', badge: 'Common', type: 'common' },
-    ],
-    count: '4 breeds',
+    name: 'Beef & Dairy Cattle',
+    breeds: 'Friesian, Ayrshire, Boran, Zebu',
+    metricLabel: 'Tracked on',
+    metricValue: 'Milk yield & health',
   },
 ]
 
 const FEATURES = [
   {
-    icon: '🐔',
-    iconClass: 'green',
-    title: 'Batch Lifecycle Tracking',
-    desc: 'Follow every flock from day-1 chicks to final sale. Log daily feed, mortality, and weight. Close a batch and instantly see your real profit.',
-    wide: true,
-    stats: [
-      { num: 'FCR', label: 'Feed conversion' },
-      { num: '100%', label: 'Cost visibility' },
-    ],
+    no: '01', icon: Layers, iconClass: '', title: 'Batch Tracking',
+    desc: 'Open a batch the day animals arrive and follow it to sale. Every cost and event logged against that batch, not the whole farm.',
+    wide: true, mini: [{ n: 'FCR', l: 'Feed conversion' }, { n: '100%', l: 'Cost traced' }],
   },
   {
-    icon: '📊',
-    iconClass: 'amber',
-    title: 'Live P&L Engine',
-    desc: 'Every shilling tracked. Revenue minus costs per batch — not estimates, real numbers updated as you log.',
-    wide: false,
+    no: '02', icon: HeartPulse, iconClass: 'amber', title: 'Mortality Log',
+    desc: 'Record deaths with cause and date. Survival rate calculated automatically per batch and species.',
   },
   {
-    icon: '📦',
-    iconClass: 'sage',
-    title: 'Smart Inventory',
-    desc: 'Feed stock, medications, and supplies with automatic low-stock alerts and supplier price history.',
-    wide: false,
+    no: '03', icon: BarChart3, iconClass: '', title: 'Profit & Loss',
+    desc: 'Revenue minus real cost, updated the moment you log a sale or a purchase — not an end-of-month guess.',
   },
   {
-    icon: '🤖',
-    iconClass: 'amber',
-    title: 'AI Farm Advisor',
-    desc: 'Ask questions about your farm data. Get forecasts, anomaly alerts, and recommendations on when to harvest or restock.',
-    wide: true,
-    stats: [
-      { num: 'Chat', label: 'Farm assistant' },
-      { num: 'Auto', label: 'Insights' },
-    ],
+    no: '04', icon: Home, iconClass: 'amber', title: 'Housing',
+    desc: 'Coops, pens, and sheds with capacity, occupancy, and which batch sits where.',
   },
   {
-    icon: '🏠',
-    iconClass: 'green',
-    title: 'Housing Management',
-    desc: 'Manage multiple pens and coops. Track capacity, occupancy, and batch assignments.',
-    wide: false,
+    no: '05', icon: Wrench, iconClass: '', title: 'Equipment Register',
+    desc: 'Every incubator, feeder, and water pump bought — cost, purchase date, and maintenance due.',
+    wide: true, mini: [{ n: 'Live', l: 'Asset list' }, { n: 'Auto', l: 'Maintenance due' }],
   },
+  {
+    no: '06', icon: TrendingUp, iconClass: 'amber', title: 'AI Buy & Sell Advisor',
+    desc: 'Tells you when a batch has hit optimal sale weight, and when input prices in your area are worth buying ahead of.',
+  },
+  {
+    no: '07', icon: Users, iconClass: '', title: 'Buyer Ledger',
+    desc: 'Every buyer who has bought from your shop — what they bought, how much they paid, and what they still owe.',
+  },
+  {
+    no: '08', icon: Wheat, iconClass: 'amber', title: 'Feed Consumption',
+    desc: 'Daily feed logged by batch, converted to cost per kilo and feed conversion ratio automatically.',
+  },
+  {
+    no: '09', icon: Syringe, iconClass: '', title: 'Medicine & Vaccination',
+    desc: 'Dosage history, vaccination schedule, and stock levels for every medicine on the farm.',
+  },
+  {
+    no: '10', icon: Thermometer, iconClass: 'amber', title: 'Temperature Advice',
+    desc: 'Heat stress and cold-snap warnings for your location, with the ventilation or brooding change to make.',
+  },
+]
+
+const FIN_ROWS = [
+  { name: 'Batch #3 — Broiler', sub: 'Kenbro · 240 birds', rev: '48,200', cost: '29,800', profit: '+18,400', posProfit: true },
+  { name: 'Batch #2 — Kienyeji', sub: 'Closed · 180 birds', rev: '21,000', cost: '11,800', profit: '+9,200', posProfit: true },
+  { name: 'Boer Herd', sub: 'Goats · 12 head', rev: '18,600', cost: '11,800', profit: '+6,800', posProfit: true },
+  { name: 'Batch #1 — Kienyeji', sub: 'Closed · 150 birds', rev: '14,400', cost: '15,900', profit: '-1,500', posProfit: false },
+]
+
+const ALERTS = [
+  { icon: TrendingUp, tag: 'Sell signal', title: 'Batch #3 has hit optimal sale weight', desc: 'Kenbro birds averaging 1.9kg at 42 days — market price in your area is up 6% this week.', cls: '' },
+  { icon: BarChart3, tag: 'Buy signal', title: 'Maize bran prices trending down', desc: 'Layer mash inputs are 8% cheaper than last month near you. Worth restocking before the next batch.', cls: 'warn' },
+  { icon: Thermometer, tag: 'Temperature advice', title: 'Heat stress risk this week', desc: 'Daytime highs above 29°C forecast for your coop location — increase ventilation and check water supply twice daily.', cls: 'temp' },
+]
+
+const BUYERS = [
+  { name: 'Grace Wanjiru', loc: 'Kiambu Market', item: '40 broilers', amt: '9,600', status: 'paid' },
+  { name: 'Peter Otieno', loc: 'Ruiru', item: '2 Boer goats', amt: '24,000', status: 'paid' },
+  { name: 'Mama Fatuma', loc: 'Mombasa Rd', item: 'Eggs, 30 trays', amt: '5,400', status: 'pending' },
+  { name: 'Samuel Kiprop', loc: 'Nakuru', item: 'Dairy milk, 60L', amt: '3,300', status: 'paid' },
 ]
 
 const TESTIMONIALS = [
   {
-    stars: '★★★★★',
-    quote: '"Before FarmFlow I had no idea which batch was actually profitable. Now I know the profit per bird before I go to market."',
-    name: 'James Mwangi',
-    role: 'Broiler Farmer · Kiambu',
-    initials: 'JM',
-    avatarClass: 'av-green',
+    quote: '"I used to lose track of which batch was actually profitable. Now the mortality log and the P&L sit side by side — I know before I get to market."',
+    name: 'James Mwangi', role: 'Broiler Farmer · Kiambu', initials: 'JM',
   },
   {
-    stars: '★★★★★',
-    quote: '"The inventory alerts alone saved me — I never run out of feed mid-cycle anymore. The AI recommendations are surprisingly accurate."',
-    name: 'Amina Hassan',
-    role: 'Kienyeji Farmer · Mombasa',
-    initials: 'AH',
-    avatarClass: 'av-amber',
+    quote: '"The temperature advice caught a heat spell before I noticed it myself. The buyer ledger means no one forgets what they owe me anymore."',
+    name: 'Amina Hassan', role: 'Kienyeji Farmer · Mombasa', initials: 'AH',
+  },
+  {
+    quote: '"Feed consumption tracking showed me exactly where the bran was going. Equipment records made it easy to prove my assets for a loan."',
+    name: 'Daniel Kiptoo', role: 'Mixed Farmer · Nakuru', initials: 'DK',
   },
 ]
 
-const MARQUEE_ITEMS = [
-  { emoji: '🐔', text: 'Batch Tracking' },
-  { emoji: '📊', text: 'P&L Engine' },
-  { emoji: '📦', text: 'Inventory Alerts' },
-  { emoji: '🏠', text: 'Housing Management' },
-  { emoji: '🤖', text: 'AI Advisor' },
-  { emoji: '🐐', text: 'Goat Management' },
-  { emoji: '🐄', text: 'Cattle Tracking' },
-  { emoji: '💰', text: 'Cost Analytics' },
-  { emoji: '🌿', text: 'Built for Kenya' },
+const TICKER_ITEMS = [
+  'Batch Tracking', 'Mortality Log', 'Profit & Loss', 'Housing', 'Equipment',
+  'AI Buy & Sell Advisor', 'Buyer Ledger', 'Feed Consumption', 'Medicine & Vaccination', 'Temperature Advice',
 ]
 
 // ── HOOKS ─────────────────────────────────────────────────────
@@ -143,13 +135,10 @@ function useScrollReveal() {
     return () => obs.disconnect()
   }, [])
 }
-
 function useNavScroll() {
   useEffect(() => {
-    const nav = document.getElementById('lpNav')
-    const handler = () => {
-      if (nav) nav.classList.toggle('scrolled', window.scrollY > 40)
-    }
+    const nav = document.getElementById('lgNav')
+    const handler = () => { if (nav) nav.classList.toggle('scrolled', window.scrollY > 30) }
     window.addEventListener('scroll', handler)
     return () => window.removeEventListener('scroll', handler)
   }, [])
@@ -158,178 +147,134 @@ function useNavScroll() {
 // ── SUB-COMPONENTS ────────────────────────────────────────────
 function Navbar({ onHamburger }) {
   return (
-    <nav className="lp-nav" id="lpNav">
-      <a href="/" className="nav-logo">
-        <div className="nav-logo-icon">🌿</div>
+    <nav className="lg-nav" id="lgNav">
+      <a href="/" className="lg-logo">
+        <div className="lg-logo-mark">FF</div>
         FarmFlow
       </a>
-      <ul className="nav-links">
-        <li><a href="#farm-types">Farm Types</a></li>
+      <ul className="lg-links">
+        <li><a href="#species">Species</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#financials">Financials</a></li>
-        <li><a href="#testimonials">Reviews</a></li>
+        <li><a href="#advisor">AI Advisor</a></li>
+        <li><a href="#buyers">Buyers</a></li>
       </ul>
-      <div className="nav-actions">
-        <a href="/login" className="btn-outline">Sign in</a>
-        <a href="/register" className="btn-filled">Get Started</a>
+      <div className="lg-actions">
+        <a href="/login" className="lg-btn-ghost">Sign in</a>
+        <a href="/register" className="lg-btn-solid">Get Started</a>
       </div>
-      <button className="nav-hamburger" onClick={onHamburger} aria-label="Menu">
+      <button className="lg-hamburger" onClick={onHamburger} aria-label="Menu">
         <span /><span /><span />
       </button>
     </nav>
   )
 }
-
 function MobileMenu({ open }) {
   return (
-    <div className={`mobile-menu${open ? ' open' : ''}`}>
-      <a href="#farm-types">Farm Types</a>
+    <div className={`lg-mobile-menu${open ? ' open' : ''}`}>
+      <a href="#species">Species</a>
       <a href="#features">Features</a>
       <a href="#financials">Financials</a>
-      <a href="#testimonials">Reviews</a>
+      <a href="#advisor">AI Advisor</a>
+      <a href="#buyers">Buyers</a>
       <a href="/login">Sign in</a>
       <a href="/register">Get Started →</a>
     </div>
   )
 }
-
 function Hero() {
   return (
-    <section className="lp-hero">
-      <div className="hero-bg-pattern" />
-      <div className="hero-dots" />
-
-      <div className="hero-content reveal">
-        <div className="hero-tag">
-          <span className="hero-tag-dot" />
-          Farm Intelligence Platform
-        </div>
-
-        <h1 className="hero-title">
-          Know your farm.{' '}
-          <span className="hero-title-green">Own your</span>{' '}
-          <span className="hero-title-amber">numbers.</span>
+    <section className="lg-hero">
+      <div className="lg-hero-left reveal">
+        <div className="lg-eyebrow"><span className="lg-eyebrow-dot" />Farm Ledger, Live</div>
+        <h1 className="lg-h1">
+          Every batch. Every shilling. <em>One ledger.</em>
         </h1>
-
-        <p className="hero-desc">
-          FarmFlow gives Kenyan farmers real-time P&L, batch lifecycle
-          tracking, inventory alerts, and an AI advisor — covering chickens,
-          goats, and cattle across all breeds.
+        <p className="lg-desc">
+          FarmFlow logs mortality, feed, medicine, and equipment against every
+          batch of chickens, goats, and cattle you run — then turns it into a
+          real profit and loss, buyer records, and AI advice on when to buy,
+          sell, and adjust for weather.
         </p>
-
-        <div className="hero-cta">
-          <a href="/register" className="btn-hero-primary">
-            Start free today <span>→</span>
-          </a>
-          <a href="#features" className="btn-hero-secondary">
-            <span>▶</span> See how it works
-          </a>
+        <div className="lg-cta-row">
+          <a href="/register" className="lg-btn-primary">Start free today →</a>
+          <a href="#features" className="lg-btn-secondary">See how it works</a>
         </div>
-
-        <div className="hero-trust">
-          <div className="trust-item">
-            <span className="trust-icon">✅</span>
-            Free to start
-          </div>
-          <div className="trust-divider" />
-          <div className="trust-item">
-            <span className="trust-icon">🇰🇪</span>
-            Kenya-built
-          </div>
-          <div className="trust-divider" />
-          <div className="trust-item">
-            <span className="trust-icon">🔒</span>
-            Data protected
-          </div>
+        <div className="lg-stat-strip">
+          <div className="lg-stat"><div className="lg-stat-num">3</div><div className="lg-stat-label">Species tracked</div></div>
+          <div className="lg-stat"><div className="lg-stat-num">10</div><div className="lg-stat-label">Farm modules</div></div>
+          <div className="lg-stat"><div className="lg-stat-num">Live</div><div className="lg-stat-label">P&L updates</div></div>
         </div>
       </div>
-
-      <div className="hero-visual reveal reveal-delay-2">
-        <div className="hero-icon-grid">
-          <div className="hero-icon-card chicken-card">
-            <div className="hero-icon-frame chicken-frame">
-              <Egg size={32} strokeWidth={1.5} />
-            </div>
-            <div className="hero-icon-label">Chicken</div>
-            <div className="hero-icon-note">Layer + broiler</div>
+      <div className="lg-hero-right reveal reveal-d2">
+        <div className="lg-ledger">
+          <div className="lg-ledger-bar">
+            <div className="lg-ledger-dot" style={{ background: '#ff5f56' }} />
+            <div className="lg-ledger-dot" style={{ background: '#ffbd2e' }} />
+            <div className="lg-ledger-dot" style={{ background: '#28ca41' }} />
+            <span className="lg-ledger-path">farmflow.ke/ledger</span>
           </div>
-          <div className="hero-icon-card goat-card">
-            <div className="hero-icon-frame goat-frame">
-              <Leaf size={32} strokeWidth={1.5} />
-            </div>
-            <div className="hero-icon-label">Goat</div>
-            <div className="hero-icon-note">Meat and dairy</div>
+          <div className="lg-ledger-head">
+            <span>#</span><span>Batch</span><span style={{ textAlign: 'right' }}>Profit</span><span style={{ textAlign: 'right' }}>Status</span>
           </div>
-          <div className="hero-icon-card cattle-card">
-            <div className="hero-icon-frame cattle-frame">
-              <Beef size={32} strokeWidth={1.5} />
+          {FIN_ROWS.map((row, i) => (
+            <div className="lg-ledger-row" key={row.name}>
+              <span className="lg-rowno">{String(i + 1).padStart(2, '0')}</span>
+              <span>
+                <div className="lg-ledger-name">{row.name}</div>
+                <div className="lg-ledger-sub">{row.sub}</div>
+              </span>
+              <span className={`lg-ledger-figure ${row.posProfit ? 'pos' : 'neg'}`}>{row.profit}</span>
+              <span className={`lg-ledger-badge ${i === 0 || i === 2 ? 'active' : 'closed'}`}>
+                {i === 0 || i === 2 ? 'active' : 'closed'}
+              </span>
             </div>
-            <div className="hero-icon-label">Cattle</div>
-            <div className="hero-icon-note">Beef + dairy</div>
+          ))}
+          <div className="lg-ledger-cursor">
+            <span className="lg-cursor-blink" />
+            calculating live profit…
           </div>
         </div>
       </div>
     </section>
   )
 }
-
-function Marquee() {
-  const doubled = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS]
+function Ticker() {
+  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS]
   return (
-    <div className="lp-marquee">
-      <div className="marquee-track">
-        {doubled.map((item, i) => (
-          <div className="marquee-item" key={i}>
-            <span className="marquee-emoji">{item.emoji}</span>
-            {item.text}
-          </div>
-        ))}
+    <div className="lg-ticker">
+      <div className="lg-ticker-track">
+        {doubled.map((item, i) => <div className="lg-ticker-item" key={i}>{item}</div>)}
       </div>
     </div>
   )
 }
-
-function FarmTypes() {
+function SpeciesSection() {
   return (
-    <section className="lp-section lp-section-alt" id="farm-types">
-      <div className="section-header-center reveal">
-        <div className="section-tag">What we track</div>
-        <h2 className="section-title">
-          Every animal. Every <em>breed.</em>
-        </h2>
-        <p className="section-sub">
-          Built for Kenya’s livestock sector, FarmFlow tracks poultry, goats, and
-          cattle with breed-aware cost models, performance benchmarks, and
-          precision reporting.
+    <section className="lg-section" id="species">
+      <div className="lg-section-head reveal">
+        <div>
+          <div className="lg-eyebrow-plain">What we track</div>
+          <h2 className="lg-title">Every animal.<br /><span className="green">Every breed.</span></h2>
+        </div>
+        <p className="lg-sub">
+          Built for Kenya's livestock sector — poultry, goats, and cattle,
+          each with breed-aware cost models and the metrics that actually
+          decide profitability.
         </p>
       </div>
-
-      <div className="farm-types-grid">
-        {FARM_TYPES.map((farm, i) => (
-          <div className={`farm-type-card reveal reveal-delay-${i % 3}`} key={farm.name}>
-            <div className="ftc-header">
-              <div className="ftc-image-wrap">
-                <img src={farm.image} alt={farm.name} className="ftc-image" />
-              </div>
-              <div className="ftc-title">{farm.name}</div>
-              <div className="ftc-sub">{farm.sub}</div>
+      <div className="lg-species-grid reveal">
+        {SPECIES.map(sp => (
+          <div className="lg-species-card" key={sp.name}>
+            <div className="lg-species-code">{sp.code}</div>
+            <div className="lg-species-img-wrap">
+              <img src={sp.image} alt={sp.name} className="lg-species-img" />
             </div>
-            <div className="ftc-body">
-              <div className="ftc-breeds-label">Tracked Breeds</div>
-              <div className="ftc-breeds">
-                {farm.breeds.map(breed => (
-                  <div className="ftc-breed" key={breed.name}>
-                    <span>{breed.name}</span>
-                    <span className={`ftc-breed-badge badge-${breed.type}`}>
-                      {breed.badge}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="ftc-footer">
-              <span className="ftc-cta">Track this farm <span>→</span></span>
-              <span className="ftc-count">{farm.count}</span>
+            <div className="lg-species-name">{sp.name}</div>
+            <div className="lg-species-breeds">{sp.breeds}</div>
+            <div className="lg-species-metric">
+              <span>{sp.metricLabel}</span>
+              <span>{sp.metricValue}</span>
             </div>
           </div>
         ))}
@@ -337,156 +282,194 @@ function FarmTypes() {
     </section>
   )
 }
-
 function Features() {
   return (
-    <section className="lp-section" id="features">
-      <div className="section-header-center reveal">
-        <div className="section-tag">Platform Features</div>
-        <h2 className="section-title">
-          Everything your farm needs.<br />
-          <span className="accent">Nothing it doesn't.</span>
-        </h2>
-        <p className="section-sub">
-          Six tightly integrated modules covering the full lifecycle — from
-          day-old chicks to final profit report.
+    <section className="lg-section" id="features">
+      <div className="lg-section-head reveal">
+        <div>
+          <div className="lg-eyebrow-plain">Platform modules</div>
+          <h2 className="lg-title">Ten modules.<br /><span className="accent">One farm record.</span></h2>
+        </div>
+        <p className="lg-sub">
+          From the day an animal arrives to the shilling a buyer pays you —
+          every module writes to the same ledger, so nothing gets tracked twice.
         </p>
       </div>
-
-      <div className="features-bento">
-        {FEATURES.map((feat, i) => (
-          <div
-            className={`feat-card reveal reveal-delay-${i % 3}${feat.wide ? ' wide' : ''}`}
-            key={feat.title}
-          >
-            <div className={`feat-icon ${feat.iconClass}`}>{feat.icon}</div>
-            <div className="feat-title">{feat.title}</div>
-            <p className="feat-desc">{feat.desc}</p>
-            {feat.stats && (
-              <div className="feat-mini-stats">
-                {feat.stats.map(s => (
-                  <div className="fms-item" key={s.label}>
-                    <div className="fms-num">{s.num}</div>
-                    <div className="fms-label">{s.label}</div>
-                  </div>
-                ))}
+      <div className="lg-feature-grid reveal">
+        {FEATURES.map(f => {
+          const Icon = f.icon
+          return (
+            <div className={`lg-feature${f.wide ? ' span2' : ''}`} key={f.title}>
+              <div className="lg-feature-top">
+                <div className={`lg-feature-icon ${f.iconClass}`}><Icon size={18} strokeWidth={1.8} /></div>
+                <div className="lg-feature-no">{f.no}</div>
               </div>
-            )}
-          </div>
-        ))}
+              <div className="lg-feature-title">{f.title}</div>
+              <p className="lg-feature-desc">{f.desc}</p>
+              {f.mini && (
+                <div className="lg-feature-mini">
+                  {f.mini.map(m => (
+                    <div key={m.l}>
+                      <div className="lg-feature-mini-num">{m.n}</div>
+                      <div className="lg-feature-mini-label">{m.l}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </section>
   )
 }
-
 function Financials() {
   return (
-    <section className="lp-section lp-section-alt" id="financials">
-      <div className="pl-split">
-        <div className="reveal">
-          <div className="section-tag">Profitability Engine</div>
-          <h2 className="section-title">
-            Stop guessing.<br />
-            <em>Start knowing.</em>
-          </h2>
-          <p className="section-sub">
-            Most farmers know their revenue. Few know their real profit. FarmFlow
-            separates every cost category so you know exactly where your money
-            goes — per batch, per bird, per season.
+    <section className="lg-section" id="financials">
+      <div className="lg-eyebrow-plain reveal">Profitability engine</div>
+      <h2 className="lg-title reveal" style={{ marginBottom: 40 }}>
+        Stop guessing. <span className="green">Start knowing.</span>
+      </h2>
+      <div className="lg-fin-split">
+        <div className="lg-fin-left reveal">
+          <p className="lg-sub" style={{ marginBottom: 0 }}>
+            Most farmers know their revenue. Few know their real profit.
+            FarmFlow separates every cost category so you know exactly where
+            the money goes — per batch, per bird, per season.
           </p>
-          <div className="pl-checks">
+          <div className="lg-fin-checks">
             {[
-              'Revenue minus costs per batch — not just total farm revenue',
-              'Cost per bird calculated automatically from your daily logs',
+              'Revenue minus cost per batch, not just total farm revenue',
+              'Cost per bird or per head calculated from your daily logs',
+              'Feed and medicine spend attributed to the batch that used it',
               'Running P&L updates the moment you log anything',
-              'Compare batch performance across breeds and seasons',
-              'FCR tracking — know if your feed is converting efficiently',
-              'Receipt photos attached to every purchase for audit trail',
-            ].map(check => (
-              <div className="pl-check" key={check}>
-                <div className="pl-check-icon">✓</div>
-                <span>{check}</span>
+              'Equipment depreciation factored into true batch cost',
+            ].map((c, i) => (
+              <div className="lg-fin-check" key={c}>
+                <span className="lg-fin-check-no">{String(i + 1).padStart(2, '0')}</span>
+                <span>{c}</span>
               </div>
             ))}
           </div>
-          <a href="/register" className="btn-hero-primary" style={{ display: 'inline-flex' }}>
-            See your numbers →
-          </a>
+          <a href="/register" className="lg-btn-primary">See your numbers →</a>
         </div>
-
-        <div className="dash-mock reveal reveal-delay-2">
-          <div className="dash-topbar">
-            <div className="dot dot-red" />
-            <div className="dot dot-yellow" />
-            <div className="dot dot-green" />
-            <div className="dash-url">farmflow.ke/dashboard</div>
+        <div className="lg-fin-right reveal reveal-d1">
+          <div className="lg-fin-table-head">
+            <span>Batch</span><span style={{ textAlign: 'right' }}>Revenue</span><span style={{ textAlign: 'right' }}>Cost</span><span style={{ textAlign: 'right' }}>Profit</span>
           </div>
-          <div className="dash-body">
-            <div className="dash-header">Farm Overview — May 2025</div>
-            <div className="dash-stats-row">
-              <div className="dash-stat">
-                <div className="ds-l">Revenue</div>
-                <div className="ds-v g">77,600</div>
-              </div>
-              <div className="dash-stat">
-                <div className="ds-l">Costs</div>
-                <div className="ds-v r">46,500</div>
-              </div>
-              <div className="dash-stat">
-                <div className="ds-l">Profit</div>
-                <div className="ds-v a">31,100</div>
-              </div>
+          {FIN_ROWS.map(row => (
+            <div className="lg-fin-table-row" key={row.name}>
+              <span>
+                <div className="lg-fin-row-name">{row.name}</div>
+                <div className="lg-fin-row-sub">{row.sub}</div>
+              </span>
+              <span className="lg-fin-cell">{row.rev}</span>
+              <span className="lg-fin-cell">{row.cost}</span>
+              <span className={`lg-fin-cell ${row.posProfit ? 'pos' : 'neg'}`}>{row.profit}</span>
             </div>
-            <div className="dash-batches">
-              {[
-                  { name: 'Batch #3', breed: 'Kenbro', profit: '+18,400', status: 'active' },
-                  { name: 'Batch #2', breed: 'Kienyeji', profit: '+9,200', status: 'closed' },
-                  { name: 'Boer Herd', breed: 'Boer Goat', profit: '+6,800', status: 'active' },
-                ].map(row => (
-                <div className="db-row" key={row.name}>
-                  <div>
-                    <div className="db-name">{row.name}</div>
-                    <div className="db-breed">{row.breed}</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="db-profit">{row.profit}</div>
-                    <div className={`db-badge ${row.status}`}>{row.status}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          ))}
+          <div className="lg-fin-totals">
+            <span>Totals — May 2026</span>
+            <span style={{ textAlign: 'right' }}>102,200</span>
+            <span style={{ textAlign: 'right' }}>69,300</span>
+            <span style={{ textAlign: 'right', color: 'var(--sage-deep)' }}>32,900</span>
           </div>
         </div>
       </div>
     </section>
   )
 }
-
+function AIAdvisor() {
+  return (
+    <section className="lg-section" id="advisor">
+      <div className="lg-eyebrow-plain reveal">AI on the farm</div>
+      <h2 className="lg-title reveal" style={{ marginBottom: 40 }}>
+        Know when to buy. <span className="accent">Know when to sell.</span>
+      </h2>
+      <div className="lg-ai">
+        <div className="lg-ai-left reveal">
+          <p className="lg-sub" style={{ marginBottom: 24 }}>
+            The advisor reads your live batch data, local input prices, and
+            forecast conditions for your coop or shed location — then tells
+            you the three things that actually move profit: when a batch is
+            ready to sell, when inputs are worth buying ahead of, and when
+            the weather itself is the risk.
+          </p>
+          <a href="/register" className="lg-btn-secondary">Ask the advisor →</a>
+        </div>
+        <div className="lg-ai-right reveal reveal-d1">
+          {ALERTS.map(a => {
+            const Icon = a.icon
+            return (
+              <div className="lg-alert" key={a.title}>
+                <div className={`lg-alert-icon ${a.cls}`}><Icon size={16} strokeWidth={1.8} /></div>
+                <div>
+                  <div className="lg-alert-tag">{a.tag}</div>
+                  <div className="lg-alert-title">{a.title}</div>
+                  <div className="lg-alert-desc">{a.desc}</div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+function Buyers() {
+  return (
+    <section className="lg-section" id="buyers">
+      <div className="lg-section-head reveal">
+        <div>
+          <div className="lg-eyebrow-plain">Shop ledger</div>
+          <h2 className="lg-title">Who bought<br /><span className="green">from you.</span></h2>
+        </div>
+        <p className="lg-sub">
+          Every sale from your shop, logged against the buyer — what they
+          took, what they paid, and what's still outstanding.
+        </p>
+      </div>
+      <div className="lg-buyers-table reveal">
+        <div className="lg-buyers-head">
+          <span>#</span><span>Buyer</span><span>Location</span><span>Item</span><span style={{ textAlign: 'right' }}>Amount</span><span>Status</span>
+        </div>
+        {BUYERS.map((b, i) => (
+          <div className="lg-buyers-row" key={b.name}>
+            <span className="lg-rowno">{String(i + 1).padStart(2, '0')}</span>
+            <span className="lg-buyer-name">{b.name}</span>
+            <span className="lg-buyer-loc">{b.loc}</span>
+            <span>{b.item}</span>
+            <span className="lg-buyer-amt">KSh {b.amt}</span>
+            <span className={`lg-buyer-status ${b.status}`}>{b.status}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
 function Testimonials() {
   return (
-    <section className="testimonial-section" id="testimonials">
-      <div className="section-header-center reveal">
-        <div className="section-tag">Farmer Stories</div>
-        <h2 className="section-title">
-          Trusted by farmers<br />
-          <em>across Kenya.</em>
-        </h2>
-        <p className="section-sub">
-          From broiler farmers in Kiambu to smallholders across Kenya —
+    <section className="lg-section" id="testimonials">
+      <div className="lg-section-head reveal">
+        <div>
+          <div className="lg-eyebrow-plain">Farmer stories</div>
+          <h2 className="lg-title">Trusted across<br /><span className="green">Kenya.</span></h2>
+        </div>
+        <p className="lg-sub">
+          From broiler farmers in Kiambu to mixed operations in Nakuru —
           real results from real farms.
         </p>
       </div>
-
-      <div className="testimonials-grid">
-        {TESTIMONIALS.map((t, i) => (
-          <div className={`testi-card reveal reveal-delay-${i}`} key={t.name}>
-            <div className="testi-stars">{t.stars}</div>
-            <p className="testi-quote">{t.quote}</p>
-            <div className="testi-author">
-              <div className={`testi-avatar ${t.avatarClass}`}>{t.initials}</div>
+      <div className="lg-testi-grid reveal">
+        {TESTIMONIALS.map(t => (
+          <div className="lg-testi" key={t.name}>
+            <div className="lg-testi-mark">"</div>
+            <p className="lg-testi-quote">{t.quote}</p>
+            <div className="lg-testi-author">
+              <div className="lg-testi-avatar">{t.initials}</div>
               <div>
-                <div className="testi-name">{t.name}</div>
-                <div className="testi-role">{t.role}</div>
+                <div className="lg-testi-name">{t.name}</div>
+                <div className="lg-testi-role">{t.role}</div>
               </div>
             </div>
           </div>
@@ -495,113 +478,96 @@ function Testimonials() {
     </section>
   )
 }
-
 function CTA() {
   return (
-    <section className="cta-section">
-      <div className="cta-box reveal">
-        <div className="cta-eyebrow">Start Today — It's Free</div>
-        <h2 className="cta-title">
-          Your farm deserves<br />
-          <em>real numbers.</em>
-        </h2>
-        <p className="cta-sub">
-          Join farmers across Kenya replacing notebooks and guesswork with
-          live P&L, AI insights, and evidence that opens funding doors.
+    <section className="lg-cta">
+      <div className="lg-cta-inner reveal">
+        <div className="lg-cta-eyebrow">Start today — it's free</div>
+        <h2 className="lg-cta-title">Your farm deserves <span className="amber">real numbers.</span></h2>
+        <p className="lg-cta-sub">
+          Join farmers across Kenya replacing notebooks and guesswork with a
+          live ledger, AI advice, and buyer records that open funding doors.
         </p>
-        <div className="cta-actions">
-          <a href="/register" className="btn-cta-main">
-            Create free account →
-          </a>
-          <a href="/login" className="btn-cta-ghost">
-            Sign in
-          </a>
+        <div className="lg-cta-actions">
+          <a href="/register" className="lg-btn-cta">Create free account →</a>
+          <a href="/login" className="lg-btn-cta-ghost">Sign in</a>
         </div>
       </div>
     </section>
   )
 }
-
 function Footer({ onCookieSettings }) {
   return (
-    <footer className="lp-footer">
-      <div className="footer-top">
+    <footer className="lg-footer">
+      <div className="lg-footer-top">
         <div>
-          <div className="footer-brand-name">🌿 FarmFlow</div>
-          <p className="footer-brand-desc">
+          <div className="lg-footer-brand">FarmFlow</div>
+          <p className="lg-footer-desc">
             Farm intelligence for the modern African farmer.
             Built in Nairobi, Kenya.
           </p>
         </div>
         <div>
-          <div className="footer-col-head">Platform</div>
-          <ul className="footer-col-links">
-            <li><a href="#farm-types">Farm Types</a></li>
+          <div className="lg-footer-head">Platform</div>
+          <ul className="lg-footer-links">
+            <li><a href="#species">Species</a></li>
             <li><a href="#features">Features</a></li>
             <li><a href="#financials">Financials</a></li>
             <li><a href="/register">Get Started</a></li>
           </ul>
         </div>
         <div>
-          <div className="footer-col-head">Legal</div>
-          <ul className="footer-col-links">
+          <div className="lg-footer-head">Legal</div>
+          <ul className="lg-footer-links">
             <li><a href="#">Privacy Policy</a></li>
             <li><a href="#">Terms of Service</a></li>
             <li><a href="#" onClick={e => { e.preventDefault(); onCookieSettings() }}>Cookie Settings</a></li>
           </ul>
         </div>
         <div>
-          <div className="footer-col-head">Contact</div>
-          <ul className="footer-col-links">
+          <div className="lg-footer-head">Contact</div>
+          <ul className="lg-footer-links">
             <li><a href="mailto:hello@farmflow.ke">hello@farmflow.ke</a></li>
             <li><a href="#">Nairobi, Kenya</a></li>
           </ul>
         </div>
       </div>
-      <div className="footer-bottom">
-        <span>© 2025 FarmFlow. All rights reserved. Built in 🇰🇪 Nairobi.</span>
+      <div className="lg-footer-bottom">
+        <span>© 2026 FarmFlow. Built in Nairobi.</span>
         <span>Kenya Data Protection Act 2019 compliant</span>
       </div>
     </footer>
   )
 }
-
 function CookieBanner({ visible, onAccept, onEssential, onClose }) {
   return (
-    <div className={`cookie-banner${visible ? ' show' : ''}`}>
-      <div className="cookie-inner">
-        <div className="cookie-icon">🍪</div>
-        <div className="cookie-copy">
-          <div className="cookie-title">We use cookies on FarmFlow</div>
-          <div className="cookie-desc">
+    <div className={`lg-cookie${visible ? ' show' : ''}`}>
+      <div className="lg-cookie-inner">
+        <div className="lg-cookie-copy">
+          <div className="lg-cookie-title">We use cookies on FarmFlow</div>
+          <div className="lg-cookie-desc">
             Essential cookies keep you logged in. Analytics cookies help us
-            improve the platform.{' '}
-            <a href="#">Learn more</a> · Kenya Data Protection Act 2019.
+            improve the platform. <a href="#">Learn more</a> · Kenya Data
+            Protection Act 2019.
           </div>
         </div>
-        <div className="cookie-btns">
-          <button className="cb-essential" onClick={onEssential}>
-            Essential only
-          </button>
-          <button className="cb-accept" onClick={onAccept}>
-            Accept all
-          </button>
+        <div className="lg-cookie-btns">
+          <button className="lg-cb-essential" onClick={onEssential}>Essential only</button>
+          <button className="lg-cb-accept" onClick={onAccept}>Accept all</button>
         </div>
-        <button className="cb-close" onClick={onClose} aria-label="Close">×</button>
+        <button className="lg-cb-close" onClick={onClose} aria-label="Close">×</button>
       </div>
     </div>
   )
 }
 
 // ── MAIN COMPONENT ────────────────────────────────────────────
-const LandingPage = () => {
+const LandingPageV2 = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [cookieVisible, setCookieVisible] = useState(false)
-
   useScrollReveal()
   useNavScroll()
 
-  // Check cookie consent on mount
   useEffect(() => {
     const saved = localStorage.getItem('farmflow-cookies')
     if (!saved) {
@@ -621,10 +587,9 @@ const LandingPage = () => {
         body: JSON.stringify({ consent }),
       })
     } catch {
-      // Saved locally
+      // saved locally
     }
   }
-
   const handleCookieSettings = () => {
     localStorage.removeItem('farmflow-cookies')
     setCookieVisible(true)
@@ -634,19 +599,18 @@ const LandingPage = () => {
     <>
       <Navbar onHamburger={() => setMenuOpen(o => !o)} />
       <MobileMenu open={menuOpen} />
-
       <main>
         <Hero />
-        <Marquee />
-        <FarmTypes />
+        <Ticker />
+        <SpeciesSection />
         <Features />
         <Financials />
+        <AIAdvisor />
+        <Buyers />
         <Testimonials />
-        <CTA />
       </main>
-
+      <CTA />
       <Footer onCookieSettings={handleCookieSettings} />
-
       <CookieBanner
         visible={cookieVisible}
         onAccept={() => saveConsent('accepted')}
@@ -657,4 +621,4 @@ const LandingPage = () => {
   )
 }
 
-export default LandingPage
+export default LandingPageV2
