@@ -149,8 +149,8 @@ function Navbar({ onHamburger }) {
   return (
     <nav className="lg-nav" id="lgNav">
       <a href="/" className="lg-logo">
-        <div className="lg-logo-mark">FF</div>
-        FarmFlow
+        <div className="lg-logo-mark">CF</div>
+        ChakFarm
       </a>
       <ul className="lg-links">
         <li><a href="#species">Species</a></li>
@@ -191,7 +191,7 @@ function Hero() {
           Every batch. Every shilling. <em>One ledger.</em>
         </h1>
         <p className="lg-desc">
-          FarmFlow logs mortality, feed, medicine, and equipment against every
+          ChakFarm logs mortality, feed, medicine, and equipment against every
           batch of chickens, goats, and cattle you run — then turns it into a
           real profit and loss, buyer records, and AI advice on when to buy,
           sell, and adjust for weather.
@@ -212,7 +212,7 @@ function Hero() {
             <div className="lg-ledger-dot" style={{ background: '#ff5f56' }} />
             <div className="lg-ledger-dot" style={{ background: '#ffbd2e' }} />
             <div className="lg-ledger-dot" style={{ background: '#28ca41' }} />
-            <span className="lg-ledger-path">farmflow.ke/ledger</span>
+            <span className="lg-ledger-path">chakfarm.co.ke/ledger</span>
           </div>
           <div className="lg-ledger-head">
             <span>#</span><span>Batch</span><span style={{ textAlign: 'right' }}>Profit</span><span style={{ textAlign: 'right' }}>Status</span>
@@ -334,7 +334,7 @@ function Financials() {
         <div className="lg-fin-left reveal">
           <p className="lg-sub" style={{ marginBottom: 0 }}>
             Most farmers know their revenue. Few know their real profit.
-            FarmFlow separates every cost category so you know exactly where
+            ChakFarm separates every cost category so you know exactly where
             the money goes — per batch, per bird, per season.
           </p>
           <div className="lg-fin-checks">
@@ -501,7 +501,7 @@ function Footer({ onCookieSettings }) {
     <footer className="lg-footer">
       <div className="lg-footer-top">
         <div>
-          <div className="lg-footer-brand">FarmFlow</div>
+          <div className="lg-footer-brand">ChakFarm</div>
           <p className="lg-footer-desc">
             Farm intelligence for the modern African farmer.
             Built in Nairobi, Kenya.
@@ -527,13 +527,13 @@ function Footer({ onCookieSettings }) {
         <div>
           <div className="lg-footer-head">Contact</div>
           <ul className="lg-footer-links">
-            <li><a href="mailto:hello@farmflow.ke">hello@farmflow.ke</a></li>
+            <li><a href="mailto:hello@chakfarm.co.ke">hello@chakfarm.co.ke</a></li>
             <li><a href="#">Nairobi, Kenya</a></li>
           </ul>
         </div>
       </div>
       <div className="lg-footer-bottom">
-        <span>© 2026 FarmFlow. Built in Nairobi.</span>
+        <span>© 2026 ChakFarm. Built in Nairobi.</span>
         <span>Kenya Data Protection Act 2019 compliant</span>
       </div>
     </footer>
@@ -544,7 +544,7 @@ function CookieBanner({ visible, onAccept, onEssential, onClose }) {
     <div className={`lg-cookie${visible ? ' show' : ''}`}>
       <div className="lg-cookie-inner">
         <div className="lg-cookie-copy">
-          <div className="lg-cookie-title">We use cookies on FarmFlow</div>
+          <div className="lg-cookie-title">We use cookies on ChakFarm</div>
           <div className="lg-cookie-desc">
             Essential cookies keep you logged in. Analytics cookies help us
             improve the platform. <a href="#">Learn more</a> · Kenya Data
@@ -562,14 +562,14 @@ function CookieBanner({ visible, onAccept, onEssential, onClose }) {
 }
 
 // ── MAIN COMPONENT ────────────────────────────────────────────
-const LandingPageV2 = () => {
+const LandingPage = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [cookieVisible, setCookieVisible] = useState(false)
   useScrollReveal()
   useNavScroll()
 
   useEffect(() => {
-    const saved = localStorage.getItem('farmflow-cookies')
+    const saved = localStorage.getItem('chakfarm-cookies')
     if (!saved) {
       const timer = setTimeout(() => setCookieVisible(true), 1400)
       return () => clearTimeout(timer)
@@ -577,7 +577,7 @@ const LandingPageV2 = () => {
   }, [])
 
   const saveConsent = async (consent) => {
-    localStorage.setItem('farmflow-cookies', consent)
+    localStorage.setItem('chakfarm-cookies', consent)
     setCookieVisible(false)
     try {
       await fetch('/api/auth/cookies/consent/', {
@@ -591,7 +591,7 @@ const LandingPageV2 = () => {
     }
   }
   const handleCookieSettings = () => {
-    localStorage.removeItem('farmflow-cookies')
+    localStorage.removeItem('chakfarm-cookies')
     setCookieVisible(true)
   }
 
@@ -621,4 +621,4 @@ const LandingPageV2 = () => {
   )
 }
 
-export default LandingPageV2
+export default LandingPage
