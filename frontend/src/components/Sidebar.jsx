@@ -1,18 +1,32 @@
 import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
-import { Menu, X, Sun, Moon } from 'lucide-react'
-import { logout as apiLogout, setAuthToken } from '../api'
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  LayoutDashboard,
+  Bird,
+  DollarSign,
+  Package,
+  Home,
+  Bot,
+  Bell,
+  Settings,
+  LogOut,
+} from 'lucide-react'
+import { logout as apiLogout, clearAuthSession } from '../api'
 
 const links = [
-  { to: '/', label: 'Overview', icon: '📊' },
-  { to: '/batches', label: 'Batches', icon: '🐔' },
-  { to: '/financials', label: 'Financials', icon: '💰' },
-  { to: '/inventory', label: 'Inventory', icon: '📦' },
-  { to: '/housing', label: 'Housing', icon: '🏠' },
-  {to: '/FlowAi', label: 'Flow AI', icon: '🤖' },
-  {to: '/notifications', label: 'Notifications', icon: '🔔' },
-  {to: '/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/batches', label: 'Batches', icon: Bird },
+  { to: '/financials', label: 'Financials', icon: DollarSign },
+  { to: '/inventory', label: 'Inventory', icon: Package },
+  { to: '/housing', label: 'Housing', icon: Home },
+  { to: '/FlowAi', label: 'Flow AI', icon: Bot },
+  { to: '/notifications', label: 'Notifications', icon: Bell },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -26,9 +40,7 @@ export default function Sidebar() {
     } catch (e) {
       // ignore network errors on logout
     }
-    localStorage.removeItem('ff_token')
-    sessionStorage.removeItem('ff_token')
-    setAuthToken(null)
+    clearAuthSession()
     navigate('/login', { replace: true })
   }
 
@@ -36,7 +48,7 @@ export default function Sidebar() {
     <>
       {/* Logo */}
       <div className="mb-8 px-3">
-        <div className="text-lg font-extrabold text-green-400">🌿 FarmFlow</div>
+        <div className="text-lg font-extrabold text-green-400">ChakaFarm</div>
         <div className="text-[11px] text-slate-500 mt-1">Poultry Management</div>
       </div>
 
@@ -56,7 +68,7 @@ export default function Sidebar() {
               }`
             }
           >
-            <span className="text-base">{link.icon}</span>
+            <link.icon className="w-4 h-4" />
             <span>{link.label}</span>
           </NavLink>
         ))}
@@ -76,7 +88,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm transition-all duration-150 cursor-pointer bg-transparent mb-4"
         >
-          <span className="text-base">🔒</span>
+          <LogOut className="w-4 h-4" />
           <span>Logout</span>
         </button>
 
@@ -94,7 +106,7 @@ export default function Sidebar() {
 
       {/* ── Mobile top bar ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-        <div className="text-base font-extrabold text-green-400">🌿 FarmFlow</div>
+        <div className="text-base font-extrabold text-green-400">ChakaFarm</div>
         <button
           onClick={() => setOpen(!open)}
           className="text-slate-400 hover:text-[var(--text-primary)] transition-colors cursor-pointer bg-transparent border-none"

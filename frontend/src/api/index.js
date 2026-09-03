@@ -4,6 +4,55 @@ const API = axios.create({
   baseURL: 'http://127.0.0.1:8000/api',
 })
 
+export const getStoredToken = () =>
+  localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token') || null
+
+const decodeJwtPayload = (token) => {
+  try {
+    const [, payload] = token.split('.')
+    if (!payload) return null
+
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+    const binary = atob(padded)
+    const json = decodeURIComponent(
+      Array.from(binary, (char) => `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`).join('')
+    )
+
+    return JSON.parse(json)
+  } catch (error) {
+    return null
+  }
+}
+
+export const isTokenExpired = (token) => {
+  if (!token) return true
+
+  const payload = decodeJwtPayload(token)
+  if (!payload || typeof payload.exp !== 'number') return false
+
+  return Date.now() >= payload.exp * 1000
+}
+
+export const hasValidAuthToken = () => {
+  const token = getStoredToken()
+  if (!token) return false
+
+  if (isTokenExpired(token)) {
+    clearAuthSession()
+    return false
+  }
+
+  return true
+}
+
+export const clearAuthSession = () => {
+  localStorage.removeItem('ff_token')
+  sessionStorage.removeItem('ff_token')
+  delete API.defaults.headers.common['Authorization']
+  window.dispatchEvent(new Event('auth:change'))
+}
+
 // Auth helpers
 export const setAuthToken = (token) => {
   if (token) {
@@ -12,6 +61,20 @@ export const setAuthToken = (token) => {
     delete API.defaults.headers.common['Authorization']
   }
 }
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isAuthError = error?.response?.status === 401
+    if (isAuthError) {
+      clearAuthSession()
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 export const login = (credentials) =>
   API.post('/auth/login/', credentials)

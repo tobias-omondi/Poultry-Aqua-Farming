@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
@@ -9,15 +9,31 @@ import Housing from './pages/Housing'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
 
+function hasAuthToken() {
+  return Boolean(localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token'))
+}
 
 function App() {
-  const token = localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token')
+  const [isAuthenticated, setIsAuthenticated] = useState(hasAuthToken)
+
+  useEffect(() => {
+    const syncAuth = () => setIsAuthenticated(hasAuthToken())
+
+    syncAuth()
+    window.addEventListener('auth:change', syncAuth)
+    window.addEventListener('storage', syncAuth)
+
+    return () => {
+      window.removeEventListener('auth:change', syncAuth)
+      window.removeEventListener('storage', syncAuth)
+    }
+  }, [])
+
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex" style={{ background: 'var(--bg-primary)' }}>
-        {/* Render Sidebar only when authenticated */}
-        {token ? <Sidebar /> : null}
-        <main className="flex-1 ml-0 md:ml-60 p-4 md:p-8 pt-16 md:pt-0">
+      <div className="min-h-screen flex bg-[var(--bg-primary)]" style={{ background: 'var(--bg-primary)' }}>
+        {isAuthenticated ? <Sidebar /> : null}
+        <main className={`flex-1 min-h-screen ${isAuthenticated ? 'md:ml-60' : 'ml-0'} p-4 pt-20 md:p-6 lg:p-8 md:pt-6`}>
           <Routes>
             <Route path="/logout" element={<LogoutPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -69,8 +85,7 @@ function App() {
 }
 
 function RequireAuth({ children }) {
-  const token = localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token')
-  if (!token) return <Navigate to="/login" replace />
+  if (!hasAuthToken()) return <Navigate to="/login" replace />
   return children
 }
 
