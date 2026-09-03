@@ -9,4 +9,5 @@ urlpatterns = [
     path('logs/<int:pk>/', views.DailyLogDetailView.as_view(), name='dailylog-detail'),
     path('harvests/', views.HarvestCreateView.as_view(), name='harvest-create'),
     path('harvests/<int:pk>/', views.HarvestDetailView.as_view(), name='harvest-detail'),
+    # path('farm-context/', views.FarmListView.as_view(), name='farm-ai-context')
 ]
