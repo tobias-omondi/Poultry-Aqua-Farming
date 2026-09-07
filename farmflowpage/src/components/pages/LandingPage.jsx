@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import './LandingPage.css'
+import Navbar from './Navbar'
+import MobileMenu from './MobileMenu'
 import {
   Layers, HeartPulse, BarChart3, Home, Wrench, TrendingUp,
   Users, Wheat, Syringe, Thermometer, Egg, Leaf, Beef,
@@ -9,6 +11,14 @@ import goat from "/src/assets/goat.jpg"
 import cow from "/src/assets/cow.jpg"
 
 // ── DATA ──────────────────────────────────────────────────────
+const NAV_LINKS = [
+  { href: '#species', label: 'Species' },
+  { href: '#features', label: 'Features' },
+  { href: '#financials', label: 'Financials' },
+  { href: '#advisor', label: 'AI Advisor' },
+  { href: '#buyers', label: 'Buyers' },
+]
+
 const SPECIES = [
   {
     code: 'SP-01 / POULTRY',
@@ -137,7 +147,7 @@ function useScrollReveal() {
 }
 function useNavScroll() {
   useEffect(() => {
-    const nav = document.getElementById('lgNav')
+    const nav = document.getElementById('siteNav')
     const handler = () => { if (nav) nav.classList.toggle('scrolled', window.scrollY > 30) }
     window.addEventListener('scroll', handler)
     return () => window.removeEventListener('scroll', handler)
@@ -145,43 +155,6 @@ function useNavScroll() {
 }
 
 // ── SUB-COMPONENTS ────────────────────────────────────────────
-function Navbar({ onHamburger }) {
-  return (
-    <nav className="lg-nav" id="lgNav">
-      <a href="/" className="lg-logo">
-        <div className="lg-logo-mark">CF</div>
-        ChakFarm
-      </a>
-      <ul className="lg-links">
-        <li><a href="#species">Species</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#financials">Financials</a></li>
-        <li><a href="#advisor">AI Advisor</a></li>
-        <li><a href="#buyers">Buyers</a></li>
-      </ul>
-      <div className="lg-actions">
-        <a href="/login" className="lg-btn-ghost">Sign in</a>
-        <a href="/register" className="lg-btn-solid">Get Started</a>
-      </div>
-      <button className="lg-hamburger" onClick={onHamburger} aria-label="Menu">
-        <span /><span /><span />
-      </button>
-    </nav>
-  )
-}
-function MobileMenu({ open }) {
-  return (
-    <div className={`lg-mobile-menu${open ? ' open' : ''}`}>
-      <a href="#species">Species</a>
-      <a href="#features">Features</a>
-      <a href="#financials">Financials</a>
-      <a href="#advisor">AI Advisor</a>
-      <a href="#buyers">Buyers</a>
-      <a href="/login">Sign in</a>
-      <a href="/register">Get Started →</a>
-    </div>
-  )
-}
 function Hero() {
   return (
     <section className="lg-hero">
@@ -597,8 +570,24 @@ const LandingPage = () => {
 
   return (
     <>
-      <Navbar onHamburger={() => setMenuOpen(o => !o)} />
-      <MobileMenu open={menuOpen} />
+      <Navbar
+        links={NAV_LINKS}
+        actions={
+          <>
+            <a href="/login" className="site-btn-ghost">Sign in</a>
+            <a href="/register" className="site-btn-solid">Get Started</a>
+          </>
+        }
+        onHamburger={() => setMenuOpen(o => !o)}
+      />
+      <MobileMenu
+        open={menuOpen}
+        links={NAV_LINKS}
+        authLinks={[
+          { to: '/login', label: 'Sign in' },
+          { to: '/register', label: 'Get Started →' },
+        ]}
+      />
       <main>
         <Hero />
         <Ticker />

@@ -3,6 +3,8 @@
    Same brand accents (sage / amber / forest), rebuilt for a dark
    surface: near-black base, light text, translucent white rules
    instead of the forest-tinted hairlines the light version used.
+   Navbar styles now live in components/layout/Navbar.css — shared
+   by every page instead of duplicated here.
    ══════════════════════════════════════════════════════════════ */
 
 /* ── FONTS ── */
@@ -48,121 +50,11 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-h1, h2, h3, .lg-logo, .lg-title { font-family: 'Space Grotesk', sans-serif; }
+h1, h2, h3, .lg-title { font-family: 'Space Grotesk', sans-serif; }
 .lg-mono, .lg-num, .lg-rowno, .lg-tag, .lg-eyebrow, .lg-figure { font-family: 'IBM Plex Mono', monospace; }
 a { text-decoration: none; color: inherit; }
 button { font-family: inherit; cursor: pointer; }
 img { max-width: 100%; display: block; }
-
-/* ══════════════ NAV ══════════════ */
-.lg-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 48px;
-  height: 64px;
-  background: rgba(18,21,15,0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--rule);
-  transition: box-shadow 0.25s;
-}
-.lg-nav.scrolled { box-shadow: 0 2px 0 var(--rule); }
-.lg-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--sage-light);
-  letter-spacing: -0.01em;
-}
-.lg-logo-mark {
-  width: 28px;
-  height: 28px;
-  background: var(--forest);
-  color: var(--white);
-  display: grid;
-  place-items: center;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-}
-.lg-links {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  list-style: none;
-}
-.lg-links li { border-left: 1px solid var(--rule); }
-.lg-links a {
-  display: block;
-  padding: 0 18px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text3);
-  transition: color 0.2s;
-}
-.lg-links a:hover { color: var(--sage-light); }
-.lg-actions { display: flex; align-items: center; gap: 0; border-left: 1px solid var(--rule); }
-.lg-btn-ghost {
-  padding: 0 18px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text2);
-  border-right: 1px solid var(--rule);
-  transition: background 0.2s;
-}
-.lg-btn-ghost:hover { background: var(--pale); }
-.lg-btn-solid {
-  padding: 0 22px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--amber);
-  color: var(--white);
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-.lg-btn-solid:hover { background: var(--amber-warm); }
-.lg-hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  padding: 4px;
-}
-.lg-hamburger span { display: block; width: 20px; height: 2px; background: var(--sage-light); }
-.lg-mobile-menu {
-  display: none;
-  position: fixed;
-  top: 64px; left: 0; right: 0;
-  background: var(--off-white);
-  border-bottom: 1px solid var(--rule);
-  z-index: 99;
-  flex-direction: column;
-}
-.lg-mobile-menu.open { display: flex; }
-.lg-mobile-menu a {
-  padding: 16px 24px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text2);
-  border-bottom: 1px solid var(--rule-soft);
-}
 
 /* ══════════════ HERO ══════════════ */
 .lg-hero {
@@ -684,9 +576,6 @@ img { max-width: 100%; display: block; }
   .lg-footer-top { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 720px) {
-  .lg-links, .lg-actions { display: none; }
-  .lg-hamburger { display: flex; }
-  .lg-nav { padding: 0 20px; }
   .lg-hero { padding: 88px 20px 40px; }
   .lg-section { padding: 64px 20px; }
   .lg-cta { padding: 64px 20px; }
