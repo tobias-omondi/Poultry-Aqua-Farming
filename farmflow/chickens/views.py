@@ -8,18 +8,26 @@ from rest_framework.permissions import IsAuthenticated
 
 class BatchListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Batch.objects.all().order_by('-start_date')
+
+    def get_queryset(self):
+        return Batch.objects.filter(user=self.request.user).order_by('-start_date')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return BatchListSerializer
         return BatchSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 class BatchDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Batch.objects.all()
     serializer_class = BatchSerializer
+
+    def get_queryset(self):
+        return Batch.objects.filter(user=self.request.user)
 
 
 class DailyLogListCreateView(generics.ListCreateAPIView):
@@ -28,7 +36,12 @@ class DailyLogListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         batch_id = self.kwargs['batch_id']
-        return DailyLog.objects.filter(batch_id=batch_id).order_by('-date')
+        return DailyLog.objects.filter(batch_id=batch_id, batch__user=self.request.user).order_by('-date')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class DailyLogDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -36,11 +49,24 @@ class DailyLogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = DailyLog.objects.all()
     serializer_class = DailyLogSerializer
 
+    def get_queryset(self):
+        return DailyLog.objects.filter(batch__user=self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class HarvestCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Harvest.objects.all()
     serializer_class = HarvestSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class HarvestDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -48,13 +74,21 @@ class HarvestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Harvest.objects.all()
     serializer_class = HarvestSerializer
 
+    def get_queryset(self):
+        return Harvest.objects.filter(batch__user=self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def batch_summary(request, pk):
     """Returns full P&L summary for a single batch."""
     try:
-        batch = Batch.objects.get(pk=pk)
+        batch = Batch.objects.get(pk=pk, user=request.user)
     except Batch.DoesNotExist:
         return Response({'error': 'Batch not found'}, status=status.HTTP_404_NOT_FOUND)
 

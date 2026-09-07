@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .Farmviews import FarmListView
 
 urlpatterns = [
     path('batches/', views.BatchListCreateView.as_view(), name='batch-list-create'),
@@ -9,5 +10,5 @@ urlpatterns = [
     path('logs/<int:pk>/', views.DailyLogDetailView.as_view(), name='dailylog-detail'),
     path('harvests/', views.HarvestCreateView.as_view(), name='harvest-create'),
     path('harvests/<int:pk>/', views.HarvestDetailView.as_view(), name='harvest-detail'),
-    # path('farm-context/', views.FarmListView.as_view(), name='farm-ai-context')
+    path('farm-context/', FarmListView.as_view(), name='farm-ai-context'),
 ]

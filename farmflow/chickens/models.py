@@ -1,7 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Batch(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='batches',
+        null=True,
+        blank=True,
+    )
     BREED_CHOICES = [
         ('kienyeji', 'Kienyeji'), # main  local breed
         ('broiler', 'Broiler'),

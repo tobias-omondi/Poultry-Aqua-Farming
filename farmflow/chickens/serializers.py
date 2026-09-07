@@ -7,6 +7,12 @@ class DailyLogSerializer(serializers.ModelSerializer):
         model = DailyLog
         fields = '__all__'
 
+    def validate_batch(self, value):
+        request = self.context.get('request')
+        if request and value and hasattr(value, 'user') and value.user != request.user:
+            raise serializers.ValidationError('This batch does not belong to your account.')
+        return value
+
 
 class HarvestSerializer(serializers.ModelSerializer):
     total_revenue = serializers.SerializerMethodField()
@@ -18,8 +24,15 @@ class HarvestSerializer(serializers.ModelSerializer):
     def get_total_revenue(self, obj):
         return obj.total_revenue()
 
+    def validate_batch(self, value):
+        request = self.context.get('request')
+        if request and value and hasattr(value, 'user') and value.user != request.user:
+            raise serializers.ValidationError('This batch does not belong to your account.')
+        return value
+
 
 class BatchSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.id')
     daily_logs = DailyLogSerializer(many=True, read_only=True)
     harvest = HarvestSerializer(read_only=True)
     mortality_percentage = serializers.SerializerMethodField()

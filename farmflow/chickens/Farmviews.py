@@ -3,11 +3,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from chickens.models import Batch, DailyLog, Harvest
-from inventory.models import Supplier, Medication,FeedStock, PurchaseOrder, PriceHistory
+from inventory.models import Supplier, Medication, FeedStock, PurchaseOrder, PriceHistory
 from housing.models import House
-# Agrigrating Farmers as one in Ai for fastapi to fetch the data from the databse and display it in the frontend
 
-# farms/views.py
+
 class FarmListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -25,16 +24,20 @@ class FarmListView(APIView):
             "farm_name": getattr(profile, 'farm_name', '') if profile else '',
         }
 
-        # The current models are not linked to a User/Profile, so return global lists.
+        batches = Batch.objects.filter(user=user)
+        daily_logs = DailyLog.objects.filter(batch__user=user)
+        harvests = Harvest.objects.filter(batch__user=user)
+        houses = House.objects.filter(active_batch__user=user)
+
         context = {
             'farmer': farmer_info,
-            'batches': list(Batch.objects.all().values(
+            'batches': list(batches.values(
                 'id', 'name', 'breed', 'initial_count', 'current_count', 'status', 'start_date', 'end_date'
             )),
-            'daily_logs': list(DailyLog.objects.all().values(
+            'daily_logs': list(daily_logs.values(
                 'id', 'batch', 'date', 'feed_consumed_kg', 'deaths', 'average_weight_kg', 'notes'
             )),
-            'harvests': list(Harvest.objects.all().values(
+            'harvests': list(harvests.values(
                 'id', 'batch', 'date', 'birds_sold', 'total_weight_kg', 'price_per_kg', 'buyer_name'
             )),
             'suppliers': list(Supplier.objects.all().values('id', 'name', 'phone', 'email', 'location', 'category')),
@@ -42,7 +45,7 @@ class FarmListView(APIView):
             'feed_stock': list(FeedStock.objects.all().values('id', 'feed_type', 'brand', 'quantity_bags', 'kg_per_bag', 'last_restocked')),
             'purchase_orders': list(PurchaseOrder.objects.all().values('id', 'item_type', 'item_name', 'quantity', 'unit', 'supplier', 'status', 'date_purchased')),
             'price_history': list(PriceHistory.objects.all().values('id', 'supplier', 'item_name', 'price_per_unit', 'date')),
-            'houses': list(House.objects.all().values('id', 'name', 'capacity', 'active_batch', 'last_cleaned')),
+            'houses': list(houses.values('id', 'name', 'capacity', 'active_batch', 'last_cleaned')),
         }
 
         return Response(context, status=status.HTTP_200_OK)
