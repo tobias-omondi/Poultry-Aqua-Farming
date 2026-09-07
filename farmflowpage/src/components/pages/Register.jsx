@@ -6,8 +6,11 @@ import './Register.css'
 const Register = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
+    username: '',
     fullName: '',
     email: '',
+    farmName: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -17,9 +20,19 @@ const Register = () => {
   const validateForm = () => {
     const newErrors = {}
 
+    if (!formData.username.trim()) newErrors.username = 'Username is required'
+    else if (formData.username.trim().length < 3) newErrors.username = 'Username must be at least 3 characters'
+    else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) newErrors.username = 'Only letters, numbers, and underscores allowed'
+
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required'
+
     if (!formData.email.trim()) newErrors.email = 'Email is required'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email'
+
+    if (!formData.farmName.trim()) newErrors.farmName = 'Farm name is required'
+
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
+    else if (!/^(?:\+254|0)[17]\d{8}$/.test(formData.phone.trim())) newErrors.phone = 'Enter a valid Kenyan phone number'
 
     if (!formData.password) newErrors.password = 'Password is required'
     else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters'
@@ -45,14 +58,51 @@ const Register = () => {
 
     setIsLoading(true)
     try {
-      // No API yet — this is where the create-account request will go.
-      console.log('Register:', formData)
-      await new Promise(resolve => setTimeout(resolve, 900))
+      // Map to the API's expected snake_case payload shape.
+      const payload = {
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        full_name: formData.fullName.trim(),
+        farm_name: formData.farmName.trim(),
+        phone: formData.phone.trim(),
+      }
+
+      const response = await fetch('http://localhost:8000/api/auth/register/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      let data = null
+      try {
+        data = await response.json()
+      } catch {
+        // No JSON body returned (e.g. 204 or empty response) — that's fine.
+      }
+
+      if (!response.ok) {
+        // DRF typically returns { field_name: ["error message"] } on validation errors.
+        if (data && typeof data === 'object') {
+          const fieldErrors = {}
+          Object.entries(data).forEach(([key, value]) => {
+            const message = Array.isArray(value) ? value[0] : String(value)
+            // Map API field names back to the form's field names.
+            const fieldMap = { full_name: 'fullName', farm_name: 'farmName' }
+            fieldErrors[fieldMap[key] || key] = message
+          })
+          setErrors(fieldErrors)
+        } else {
+          setErrors({ submit: 'Registration failed. Please try again.' })
+        }
+        setIsLoading(false)
+        return
+      }
 
       // Send the new user to sign in with their new credentials.
       navigate('/login', { state: { justRegistered: true, email: formData.email } })
     } catch (err) {
-      setErrors({ submit: 'Registration failed. Please try again.' })
+      setErrors({ submit: 'Could not reach the server. Check your connection and try again.' })
       setIsLoading(false)
     }
   }
@@ -80,6 +130,20 @@ const Register = () => {
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="auth-form-group">
+              <label htmlFor="username" className="auth-label">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className={`auth-input ${errors.username ? 'error' : ''}`}
+                placeholder="farmer1"
+              />
+              {errors.username && <span className="auth-error-text">{errors.username}</span>}
+            </div>
+
+            <div className="auth-form-group">
               <label htmlFor="fullName" className="auth-label">Full Name</label>
               <input
                 type="text"
@@ -105,6 +169,34 @@ const Register = () => {
                 placeholder="you@farm.com"
               />
               {errors.email && <span className="auth-error-text">{errors.email}</span>}
+            </div>
+
+            <div className="auth-form-group">
+              <label htmlFor="farmName" className="auth-label">Farm Name</label>
+              <input
+                type="text"
+                id="farmName"
+                name="farmName"
+                value={formData.farmName}
+                onChange={handleChange}
+                className={`auth-input ${errors.farmName ? 'error' : ''}`}
+                placeholder="Green Valley Farm"
+              />
+              {errors.farmName && <span className="auth-error-text">{errors.farmName}</span>}
+            </div>
+
+            <div className="auth-form-group">
+              <label htmlFor="phone" className="auth-label">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className={`auth-input ${errors.phone ? 'error' : ''}`}
+                placeholder="0712345678"
+              />
+              {errors.phone && <span className="auth-error-text">{errors.phone}</span>}
             </div>
 
             <div className="auth-form-group">
