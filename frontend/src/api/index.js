@@ -266,6 +266,32 @@ export const deleteSupplier = (id) =>
     `/inventory/suppliers/${id}/`
   )
 
+/* ---------------- INVENTORY ---------------- */
+
+export const getInventory = () =>
+  API.get('/inventory/feed/')
+
+export const createInventoryItem = (data) =>
+  API.post('/inventory/feed/', data)
+
+export const updateInventoryItem = (id, data) =>
+  API.patch(`/inventory/feed/${id}/`, data)
+
+export const deleteInventoryItem = (id) =>
+  API.delete(`/inventory/feed/${id}/`)
+
+export const getOrders = () =>
+  API.get('/inventory/purchase-orders/')
+
+export const createOrder = (data) =>
+  API.post('/inventory/purchase-orders/', data)
+
+export const updateOrder = (id, data) =>
+  API.patch(`/inventory/purchase-orders/${id}/`, data)
+
+export const deleteOrder = (id) =>
+  API.delete(`/inventory/purchase-orders/${id}/`)
+
 /* =========================================================
    HOUSING
 ========================================================= */
