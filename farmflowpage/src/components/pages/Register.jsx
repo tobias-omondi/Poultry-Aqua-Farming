@@ -71,6 +71,7 @@ const Register = () => {
       const response = await fetch('https://poultry-farming.onrender.com/api/auth/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       })
 

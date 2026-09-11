@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const API = axios.create({
   baseURL: 'https://poultry-farming.onrender.com/api',
+  withCredentials: true,
 })
 
 export const getStoredToken = () =>
