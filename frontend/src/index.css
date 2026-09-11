@@ -24,8 +24,34 @@
   --accent-light: #14532d33;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+table {
+  border-collapse: collapse;
 }

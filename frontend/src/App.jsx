@@ -31,9 +31,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex bg-[var(--bg-primary)]" style={{ background: 'var(--bg-primary)' }}>
+      <div className="min-h-screen w-full overflow-x-hidden flex" style={{ background: 'var(--bg-primary)' }}>
         {isAuthenticated ? <Sidebar /> : null}
-        <main className={`flex-1 min-h-screen ${isAuthenticated ? 'md:ml-60' : 'ml-0'} p-4 pt-20 md:p-6 lg:p-8 md:pt-6`}>
+        <main className={`flex-1 min-h-screen min-w-0 w-full overflow-x-hidden ${isAuthenticated ? 'md:ml-60' : 'ml-0'} px-3 py-4 pt-20 sm:px-4 md:p-6 lg:p-8 md:pt-6`}>
           <Routes>
             <Route path="/logout" element={<LogoutPage />} />
             <Route path="/login" element={<LoginPage />} />
