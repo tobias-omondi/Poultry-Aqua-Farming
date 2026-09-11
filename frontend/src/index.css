@@ -55,3 +55,27 @@ button, input, select, textarea {
 table {
   border-collapse: collapse;
 }
+
+.bg-panel {
+  background-color: var(--bg-card);
+}
+
+.bg-panel-soft {
+  background-color: var(--bg-secondary);
+}
+
+.border-panel {
+  border-color: var(--border);
+}
+
+.text-panel {
+  color: var(--text-primary);
+}
+
+.text-subtle {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}

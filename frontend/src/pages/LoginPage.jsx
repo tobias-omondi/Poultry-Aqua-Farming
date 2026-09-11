@@ -116,7 +116,7 @@ const LoginPage = () => {
               className="text-[#F5F0E8] text-xl font-bold tracking-wide"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
-              FarmFlow
+              ChakFarm
             </span>
           </div>
 
@@ -132,7 +132,7 @@ const LoginPage = () => {
 
           <p className="text-[#A89F8C] text-[15px] font-light leading-relaxed max-w-sm mb-10">
             Your full farm operation — poultry, cattle, and goats — monitored in one place.
-            From batch logs to feed schedules, FarmFlow keeps you in control.
+            From batch logs to feed schedules, ChakFarm keeps you in control.
           </p>
 
           {/* Stats */}
@@ -176,7 +176,7 @@ const LoginPage = () => {
               </svg>
             </div>
             <span className="text-[#1C1A14] text-lg font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
-              FarmFlow
+              ChakFarm
             </span>
           </div>
 
@@ -189,7 +189,7 @@ const LoginPage = () => {
           >
             Welcome back
           </h2>
-          <p className="text-[#A89F8C] text-sm mb-8">Sign in to your FarmFlow account</p>
+          <p className="text-[#A89F8C] text-sm mb-8">Sign in to your ChakFarm account</p>
 
           {/* Google */}
           <button
@@ -325,13 +325,13 @@ const LoginPage = () => {
                   <path d="M12 2a10 10 0 0110 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               ) : (
-                'Sign In to FarmFlow'
+                'Sign In to ChakFarm'
               )}
             </button>
           </form>
 
           <p className="mt-6 text-center text-[13px] text-[#A89F8C]">
-            New to FarmFlow?{' '}
+            New to ChakFarm?{' '}
             <a href="#" className="text-[#4A7C59] font-semibold hover:underline">
               Request farm access
             </a>

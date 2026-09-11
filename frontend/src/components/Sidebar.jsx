@@ -48,7 +48,7 @@ export default function Sidebar() {
     <>
       {/* Logo */}
       <div className="mb-8 px-3">
-        <div className="text-lg font-extrabold text-green-400">ChakaFarm</div>
+        <div className="text-lg font-extrabold text-green-400">ChakFarm</div>
         <div className="text-[11px] text-slate-500 mt-1">Poultry Management</div>
       </div>
 
@@ -106,7 +106,7 @@ export default function Sidebar() {
 
       {/* ── Mobile top bar ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-        <div className="text-base font-extrabold text-green-400">ChakaFarm</div>
+        <div className="text-base font-extrabold text-green-400">ChakFarm</div>
         <button
           onClick={() => setOpen(!open)}
           className="text-slate-400 hover:text-[var(--text-primary)] transition-colors cursor-pointer bg-transparent border-none"
