@@ -1,0 +1,24 @@
+# Python virtual environments
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Python cache files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+
+# Django local DB / media if needed
+*.sqlite3
+
+# OS files
+.DS_Store
+
+# Editor settings
+.vscode/
+
+# Optional env files
+.env
+.env.*
