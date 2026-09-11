@@ -14,7 +14,7 @@ SECRET_KEY = '*&9(l4ix!dqjuf%&wkim7r@s()z$z=dwn0%sci!8#bgb+krql4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('https://poultry-farming.onrender.com/', 'localhost,127.0.0.1').split(',')..
 
 
 # Application definition
