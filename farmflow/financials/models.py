@@ -1,10 +1,18 @@
 from django.db import models
+from django.conf import settings
 from chickens.models import Batch
 
 
 
 # The costs and sales models are designed to be flexible and extensible, allowing you to track a wide range of financial transactions related to your poultry farming operations. Each cost or sale can be associated with a specific batch of chickens, or it can be recorded as a general farm expense or income if not tied to a particular batch. This structure provides a comprehensive view of your farm's financial health and helps you make informed decisions based on detailed financial data.
 class Cost(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='costs',
+        null=True,
+        blank=True,
+    )
     CATEGORY_CHOICES = [
         ('feed', 'Feed'),
         ('medication', 'Medication'),
@@ -34,6 +42,13 @@ class Cost(models.Model):
 
 
 class Sale(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sales',
+        null=True,
+        blank=True,
+    )
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='sales')
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
