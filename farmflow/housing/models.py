@@ -1,8 +1,16 @@
 from django.db import models
+from django.conf import settings
 from chickens.models import Batch
 
 
 class House(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='houses',
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=100)  # e.g. "House A"
     capacity = models.PositiveIntegerField()  # max birds
     active_batch = models.OneToOneField(

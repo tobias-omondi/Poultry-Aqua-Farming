@@ -9,6 +9,7 @@ class HouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = House
         fields = '__all__'
+        read_only_fields = ('user',)
 
     def get_is_available(self, obj):
         return obj.is_available()

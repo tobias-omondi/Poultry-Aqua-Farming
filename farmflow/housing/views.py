@@ -8,25 +8,26 @@ from rest_framework.permissions import IsAuthenticated
 
 class HouseListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = HouseSerializer
 
     def get_queryset(self):
-        return House.objects.filter(active_batch__user=self.request.user)
+        return House.objects.filter(user=self.request.user)
 
-    serializer_class = HouseSerializer
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class HouseDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = HouseSerializer
 
     def get_queryset(self):
-        return House.objects.filter(active_batch__user=self.request.user)
-
-    serializer_class = HouseSerializer
+        return House.objects.filter(user=self.request.user)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def available_houses(request):
     """Returns only houses with no active batch."""
-    houses = House.objects.filter(active_batch__user=request.user, active_batch__isnull=True)
+    houses = House.objects.filter(user=request.user, active_batch__isnull=True)
     return Response(HouseSerializer(houses, many=True).data)
