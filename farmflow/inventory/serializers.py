@@ -19,6 +19,13 @@ class FeedStockSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('user',)
 
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['last_restocked', 'preferred_supplier']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
+
     def get_is_low(self, obj):
         return obj.is_low()
 
@@ -34,6 +41,13 @@ class MedicationSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('user',)
 
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['expiry_date', 'preferred_supplier']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
+
     def get_is_low(self, obj):
         return obj.is_low()
 
@@ -46,6 +60,13 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('user',)
 
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['supplier', 'estimated_cost', 'actual_cost', 'date_needed', 'date_purchased', 'receipt_photo']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
+
     def get_cost_variance(self, obj):
         return obj.cost_variance()
 
@@ -55,3 +76,10 @@ class PriceHistorySerializer(serializers.ModelSerializer):
         model = PriceHistory
         fields = '__all__'
         read_only_fields = ('user',)
+
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['purchase_order']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
