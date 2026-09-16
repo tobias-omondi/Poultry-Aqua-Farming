@@ -9,6 +9,7 @@ import Housing from './pages/Housing'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
 import Notifications from './pages/Notifications'
+import Settings from './pages/Settings'
 
 function hasAuthToken() {
   return Boolean(localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token'))
@@ -83,6 +84,14 @@ function App() {
               element={
                 <RequireAuth>
                   <Notifications />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <Settings />
                 </RequireAuth>
               }
             />
