@@ -40,11 +40,11 @@ class FarmListView(APIView):
             'harvests': list(harvests.values(
                 'id', 'batch', 'date', 'birds_sold', 'total_weight_kg', 'price_per_kg', 'buyer_name'
             )),
-            'suppliers': list(Supplier.objects.all().values('id', 'name', 'phone', 'email', 'location', 'category')),
-            'medications': list(Medication.objects.all().values('id', 'name', 'quantity', 'unit', 'expiry_date')),
-            'feed_stock': list(FeedStock.objects.all().values('id', 'feed_type', 'brand', 'quantity_bags', 'kg_per_bag', 'last_restocked')),
-            'purchase_orders': list(PurchaseOrder.objects.all().values('id', 'item_type', 'item_name', 'quantity', 'unit', 'supplier', 'status', 'date_purchased')),
-            'price_history': list(PriceHistory.objects.all().values('id', 'supplier', 'item_name', 'price_per_unit', 'date')),
+            'suppliers': list(Supplier.objects.filter(user=user).values('id', 'name', 'phone', 'email', 'location', 'category')),
+            'medications': list(Medication.objects.filter(user=user).values('id', 'name', 'quantity', 'unit', 'expiry_date')),
+            'feed_stock': list(FeedStock.objects.filter(user=user).values('id', 'feed_type', 'brand', 'quantity_bags', 'kg_per_bag', 'last_restocked')),
+            'purchase_orders': list(PurchaseOrder.objects.filter(user=user).values('id', 'item_type', 'item_name', 'quantity', 'unit', 'supplier', 'status', 'date_purchased')),
+            'price_history': list(PriceHistory.objects.filter(user=user).values('id', 'supplier', 'item_name', 'price_per_unit', 'date')),
             'houses': list(houses.values('id', 'name', 'capacity', 'active_batch', 'last_cleaned')),
         }
 

@@ -1,7 +1,15 @@
 from django.db import models
+from django.conf import settings
 
 
 class Supplier(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='suppliers',
+        null=True,
+        blank=True,
+    )
     SUPPLY_CATEGORY_CHOICES = [
         ('feed', 'Feed'),
         ('medication', 'Medication'),
@@ -23,6 +31,13 @@ class Supplier(models.Model):
 
 
 class FeedStock(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='feed_stocks',
+        null=True,
+        blank=True,
+    )
     FEED_TYPE_CHOICES = [
         ('starter', 'Starter'),
         ('grower', 'Grower'),
@@ -52,6 +67,13 @@ class FeedStock(models.Model):
 
 
 class Medication(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='medications',
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=200)
     quantity = models.PositiveIntegerField()
     unit = models.CharField(max_length=50)
@@ -71,6 +93,13 @@ class Medication(models.Model):
 
 
 class PurchaseOrder(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='purchase_orders',
+        null=True,
+        blank=True,
+    )
     ITEM_TYPE_CHOICES = [
         ('feed', 'Feed'),
         ('medication', 'Medication'),
@@ -116,6 +145,13 @@ class PurchaseOrder(models.Model):
 
 
 class PriceHistory(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='price_history',
+        null=True,
+        blank=True,
+    )
     """
     Every time a purchase is completed, a price record is saved here.
     Over time this builds a supplier price comparison per item.

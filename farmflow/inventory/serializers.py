@@ -7,6 +7,7 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = '__all__'
+        read_only_fields = ('user',)
 
 
 class FeedStockSerializer(serializers.ModelSerializer):
@@ -16,6 +17,7 @@ class FeedStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeedStock
         fields = '__all__'
+        read_only_fields = ('user',)
 
     def get_is_low(self, obj):
         return obj.is_low()
@@ -30,6 +32,7 @@ class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication
         fields = '__all__'
+        read_only_fields = ('user',)
 
     def get_is_low(self, obj):
         return obj.is_low()
@@ -41,6 +44,7 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseOrder
         fields = '__all__'
+        read_only_fields = ('user',)
 
     def get_cost_variance(self, obj):
         return obj.cost_variance()
@@ -50,3 +54,4 @@ class PriceHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PriceHistory
         fields = '__all__'
+        read_only_fields = ('user',)

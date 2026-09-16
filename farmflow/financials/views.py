@@ -11,25 +11,40 @@ from rest_framework.permissions import IsAuthenticated
 
 class CostListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Cost.objects.all().order_by('-date')
+
+    def get_queryset(self):
+        return Cost.objects.filter(batch__user=self.request.user).order_by('-date')
+
+    def perform_create(self, serializer):
+        serializer.save()
+
     serializer_class = CostSerializer
 
 
 class CostDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Cost.objects.all()
+
+    def get_queryset(self):
+        return Cost.objects.filter(batch__user=self.request.user)
+
     serializer_class = CostSerializer
 
 
 class SaleListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Sale.objects.all().order_by('-date')
+
+    def get_queryset(self):
+        return Sale.objects.filter(batch__user=self.request.user).order_by('-date')
+
     serializer_class = SaleSerializer
 
 
 class SaleDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Sale.objects.all()
+
+    def get_queryset(self):
+        return Sale.objects.filter(batch__user=self.request.user)
+
     serializer_class = SaleSerializer
 
 
@@ -37,10 +52,11 @@ class SaleDetailView(generics.RetrieveUpdateDestroyAPIView):
 @permission_classes([IsAuthenticated])
 def farm_pl_summary(request):
     """Overall farm Profit&Loss — all batches combined."""
-    total_costs = sum(c.amount for c in Cost.objects.all())
-    total_sales = sum(s.amount for s in Sale.objects.all())
+    batches = Batch.objects.filter(user=request.user)
+    total_costs = sum(c.amount for c in Cost.objects.filter(batch__user=request.user))
+    total_sales = sum(s.amount for s in Sale.objects.filter(batch__user=request.user))
     total_chick_costs = sum(
-        b.purchase_cost for b in Batch.objects.all()
+        b.purchase_cost for b in batches
     )
 
     total_expenses = total_costs + total_chick_costs
@@ -51,8 +67,8 @@ def farm_pl_summary(request):
         'total_costs': float(total_expenses),
         'profit': float(profit),
         'is_profitable': profit > 0,
-        'active_batches': Batch.objects.filter(status='active').count(),
-        'closed_batches': Batch.objects.filter(status='closed').count(),
+        'active_batches': batches.filter(status='active').count(),
+        'closed_batches': batches.filter(status='closed').count(),
     })
 
 
@@ -63,6 +79,7 @@ def costs_by_category(request):
     from django.db.models import Sum
     breakdown = (
         Cost.objects
+        .filter(batch__user=request.user)
         .values('category')
         .annotate(total=Sum('amount'))
         .order_by('-total')
