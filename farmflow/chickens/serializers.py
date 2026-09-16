@@ -7,6 +7,13 @@ class DailyLogSerializer(serializers.ModelSerializer):
         model = DailyLog
         fields = '__all__'
 
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['notes', 'average_weight_kg']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
+
     def validate_batch(self, value):
         request = self.context.get('request')
         if request and value and hasattr(value, 'user') and value.user != request.user:
@@ -20,6 +27,13 @@ class HarvestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Harvest
         fields = '__all__'
+
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['buyer_name', 'notes']:
+            if field in data and data[field] in ['', None]:
+                data[field] = ''
+        return super().to_internal_value(data)
 
     def get_total_revenue(self, obj):
         return obj.total_revenue()
@@ -41,6 +55,13 @@ class BatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Batch
         fields = '__all__'
+
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['end_date', 'notes']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
 
     def get_mortality_percentage(self, obj):
         return obj.mortality_percentage()

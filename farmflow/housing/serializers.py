@@ -11,6 +11,13 @@ class HouseSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('user',)
 
+    def to_internal_value(self, data):
+        data = data.copy()
+        for field in ['active_batch', 'last_cleaned']:
+            if field in data and data[field] in ['', None]:
+                data[field] = None
+        return super().to_internal_value(data)
+
     def get_is_available(self, obj):
         return obj.is_available()
 
