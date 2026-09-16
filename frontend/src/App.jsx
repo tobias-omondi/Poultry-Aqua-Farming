@@ -8,6 +8,7 @@ import Inventory from './pages/Inventory'
 import Housing from './pages/Housing'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
+import Notifications from './pages/Notifications'
 
 function hasAuthToken() {
   return Boolean(localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token'))
@@ -74,6 +75,14 @@ function App() {
               element={
                 <RequireAuth>
                   <Housing />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <RequireAuth>
+                  <Notifications />
                 </RequireAuth>
               }
             />

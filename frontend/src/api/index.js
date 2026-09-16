@@ -301,3 +301,13 @@ export const getHouses = () =>
 export const createHouse = (data) => API.post('/housing/', data)
 export const deleteHouse = (id) => API.delete(`/housing/${id}/`)
 export const updateHouse = (id, data) => API.patch(`/housing/${id}/`, data)
+
+/* =========================================================
+    NOTIFICATIONS
+  ========================================================= */
+
+  export const getNotifications = () => API.get('/notifications/')
+  export const markNotificationRead = (id, data) => API.patch(`/notifications/${id}/`, data)
+  export const markAllNotificationsRead = () => API.post('/notifications/mark-all-read/')
+  export const deleteNotification = (id) => API.delete(`/notifications/${id}/`)
+  
