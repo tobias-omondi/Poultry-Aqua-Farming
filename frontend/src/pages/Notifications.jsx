@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Bell, Trash2, CheckCheck } from 'lucide-react'
+import { Bell, Trash2, CheckCheck, AlertTriangle } from 'lucide-react'
 import {
   getNotifications,
   markNotificationRead,
@@ -17,22 +17,18 @@ const KIND_CHOICES = [
 ]
 
 const KIND_TINT = {
-  health: 'border-l-emerald-500',
-  market: 'border-l-amber-500',
-  alert: 'border-l-red-500',
-  infra: 'border-l-slate-500',
+  health: 'bg-emerald-500/20 text-emerald-400',
+  market: 'bg-amber-500/20 text-amber-400',
+  alert: 'bg-red-500/20 text-red-400',
+  infra: 'bg-slate-500/20 text-slate-400',
 }
 
-function groupByDay(notifications) {
-  const groups = {}
-  notifications.forEach(n => {
-    const day = new Date(n.created_at).toLocaleDateString(undefined, {
-      weekday: 'short', month: 'short', day: 'numeric',
-    })
-    if (!groups[day]) groups[day] = []
-    groups[day].push(n)
-  })
-  return groups
+function formatTime(iso) {
+  const d = new Date(iso)
+  const today = new Date()
+  const sameDay = d.toDateString() === today.toDateString()
+  if (sameDay) return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 export default function Notifications() {
@@ -54,8 +50,11 @@ export default function Notifications() {
     return notifications.filter(n => n.kind === kind)
   }, [notifications, kind])
 
-  const grouped = useMemo(() => groupByDay(filtered), [filtered])
-  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications])
+  const stats = useMemo(() => ({
+    unread: notifications.filter(n => !n.is_read).length,
+    alerts: notifications.filter(n => n.kind === 'alert' && !n.is_read).length,
+    today: notifications.filter(n => new Date(n.created_at).toDateString() === new Date().toDateString()).length,
+  }), [notifications])
 
   const toggleRead = (n) => {
     markNotificationRead(n.id, { is_read: !n.is_read }).then(loadData)
@@ -71,24 +70,40 @@ export default function Notifications() {
   }
 
   return (
-    <div className="max-w-3xl w-full mx-auto">
+    <div className="max-w-7xl w-full mx-auto">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-panel tracking-tight flex items-center gap-2">
-            <Bell className="w-5 h-5" /> Notifications
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">What needs your attention, grouped by day</p>
+          <h1 className="text-2xl font-extrabold text-panel tracking-tight">Notifications</h1>
+          <p className="text-sm text-slate-500 mt-1">What needs your attention across the farm</p>
         </div>
-        <button
-          onClick={markAll}
-          disabled={unreadCount === 0}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-panel text-slate-300 text-sm font-bold hover:text-panel transition-colors cursor-pointer bg-transparent disabled:opacity-40 disabled:cursor-default"
-        >
-          <CheckCheck className="w-4 h-4" /> Mark all as read
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button
+            onClick={markAll}
+            disabled={stats.unread === 0}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 text-black text-sm font-bold hover:bg-green-400 transition-colors cursor-pointer border-none w-full sm:w-auto disabled:opacity-40 disabled:cursor-default"
+          >
+            <CheckCheck className="w-4 h-4" /> Mark all read
+          </button>
+        </div>
       </div>
 
-      <div className="flex gap-1 bg-panel border border-panel rounded-xl p-1 mb-6 w-full sm:w-fit overflow-x-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Unread', value: stats.unread, icon: <Bell className="w-5 h-5" />, tint: 'bg-blue-500/20 text-blue-400' },
+          { label: 'Unread alerts', value: stats.alerts, icon: <AlertTriangle className="w-5 h-5" />, tint: 'bg-red-500/20 text-red-400' },
+          { label: 'Today', value: stats.today, icon: <Bell className="w-5 h-5" />, tint: 'bg-emerald-500/20 text-emerald-400' },
+        ].map((s, i) => (
+          <div key={i} className="bg-panel border border-panel rounded-2xl p-5">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{s.label}</span>
+              <span className={`p-2 rounded-xl ${s.tint}`}>{s.icon}</span>
+            </div>
+            <div className="text-2xl font-extrabold text-panel tracking-tight">{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mb-5 flex gap-1 bg-panel border border-panel rounded-xl p-1 w-full sm:w-fit overflow-x-auto">
         {KIND_CHOICES.map(([v, l]) => (
           <button
             key={v}
@@ -100,42 +115,40 @@ export default function Notifications() {
         ))}
       </div>
 
-      {Object.entries(grouped).map(([day, items]) => (
-        <div key={day} className="mb-6">
-          <div className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-2 pb-2 border-b border-panel">{day}</div>
-          <div className="space-y-2">
-            {items.map(n => (
-              <div
-                key={n.id}
-                onClick={() => toggleRead(n)}
-                className={`flex gap-3 p-4 bg-panel border border-panel border-l-4 rounded-xl cursor-pointer transition-opacity ${KIND_TINT[n.kind] || 'border-l-slate-500'} ${n.is_read ? 'opacity-50' : ''}`}
-              >
-                <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.is_read ? 'border border-panel' : 'bg-amber-400'}`} />
-                <div className="flex-1">
-                  <div className="flex justify-between gap-3">
-                    <h3 className="text-sm font-bold text-panel">{n.title}</h3>
-                    <time className="text-xs text-slate-500 whitespace-nowrap">
-                      {new Date(n.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-                    </time>
-                  </div>
-                  {n.message && <p className="text-sm text-slate-400 mt-1">{n.message}</p>}
-                  <span className="text-xs text-slate-500 mt-2 inline-block capitalize">{n.kind}</span>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); remove(n.id) }}
-                  className="p-1.5 h-fit rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer border-none"
+      <div className="bg-panel border border-panel rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full" style={{ minWidth: 780 }}>
+            <thead>
+              <tr>
+                {['', 'Title', 'Message', 'Type', 'Time', ''].map(h => <th key={h} className="text-left text-[10px] uppercase tracking-widest text-slate-500 px-5 py-3 font-semibold border-b border-panel">{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(n => (
+                <tr
+                  key={n.id}
+                  onClick={() => toggleRead(n)}
+                  className={`border-b border-panel hover:bg-white/5 transition-colors cursor-pointer ${n.is_read ? 'opacity-50' : ''}`}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-block w-2 h-2 rounded-full ${n.is_read ? 'border border-panel' : 'bg-amber-400'}`} />
+                  </td>
+                  <td className={`px-5 py-3.5 text-sm text-panel ${n.is_read ? 'font-medium' : 'font-bold'}`}>{n.title}</td>
+                  <td className="px-5 py-3.5 text-sm text-slate-500 max-w-xs truncate">{n.message || '—'}</td>
+                  <td className="px-5 py-3.5"><span className={`inline-flex px-2 py-1 rounded-full text-[10px] font-semibold capitalize ${KIND_TINT[n.kind] || 'bg-slate-500/20 text-slate-400'}`}>{n.kind}</span></td>
+                  <td className="px-5 py-3.5 text-sm text-slate-400 whitespace-nowrap">{formatTime(n.created_at)}</td>
+                  <td className="px-5 py-3.5">
+                    <button onClick={(e) => { e.stopPropagation(); remove(n.id) }} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer border-none">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!loading && filtered.length === 0 && <div className="text-center py-12 text-slate-500 text-sm">You're caught up — no notifications here.</div>}
         </div>
-      ))}
-
-      {!loading && filtered.length === 0 && (
-        <div className="text-center py-16 text-slate-500 text-sm">You're caught up — no notifications here.</div>
-      )}
+      </div>
     </div>
   )
 }
