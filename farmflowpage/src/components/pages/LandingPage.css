@@ -1,44 +1,48 @@
 /* ══════════════════════════════════════════════════════════════
-   FARMFLOW — LEDGER EDITION (DARK)
-   Same brand accents (sage / amber / forest), rebuilt for a dark
-   surface: near-black base, light text, translucent white rules
-   instead of the forest-tinted hairlines the light version used.
-   Navbar styles now live in components/layout/Navbar.css — shared
-   by every page instead of duplicated here.
+   CHAKFARM — LEDGER EDITION (LIGHT)
+   Same brand accents (sage / amber / forest) on a light surface:
+   pale green-white base, dark green-black text, translucent black
+   rules. Navbar styles live in Navbar.css, shared by every page.
    ══════════════════════════════════════════════════════════════ */
 
 /* ── FONTS ── */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 /* ── TOKENS ── */
+.site-theme,
 :root {
-  --bg: #12150f;            /* page base */
-  --off-white: #171b11;     /* subtle block bg (ticker, totals row) */
-  --pale: #1f2517;          /* hover / active tint */
-  --surface: #1a1f15;       /* card surfaces (ledger, buyer rows, cookie bar) */
-  --footer-bg: #0a0c07;
+  --bg: #f7f9f3;            /* page base */
+  --off-white: #eef3e6;     /* subtle block bg (ticker, totals row) */
+  --pale: #e8efdd;          /* hover / active tint */
+  --surface: #ffffff;       /* card surfaces (ledger, buyer rows, cookie bar) */
+  --footer-bg: #e9efe0;
 
-  --sage-light: #bfdeb0;
-  --sage: #8dc478;
-  --sage-deep: #5fae48;     /* brightened from v1 for dark-bg legibility, still works as button fill */
+  --sage-light: #2d5a1e;    /* accent text / hover (dark green on light bg) */
+  --on-forest: #bfdeb0;     /* light green text sitting on solid forest fills */
+  --sage: #4f9d3a;
+  --sage-deep: #3d8a2b;
   --forest: #2d5a1e;
 
-  --amber: #ea8c3f;
-  --amber-warm: #f4a15a;
-  --amber-pale: rgba(224,138,58,0.14);
-  --amber-light: rgba(224,138,58,0.28);
+  --amber: #d4731f;
+  --amber-warm: #e48a3a;
+  --amber-pale: rgba(212,115,31,0.12);
+  --amber-light: rgba(212,115,31,0.26);
 
-  --text: #f1f4ec;
-  --text2: #cdd8c2;
-  --text3: #98ab8c;
-  --text4: #78896d;
+  --text: #1c2416;
+  --text2: #3d4a33;
+  --text3: #5c6c50;
+  --text4: #7a8a6e;
 
-  --rule: rgba(255,255,255,0.14);
-  --rule-soft: rgba(255,255,255,0.07);
+  --rule: rgba(0,0,0,0.14);
+  --rule-soft: rgba(0,0,0,0.07);
 
   --white: #ffffff;         /* pure white, for text sitting on solid amber/forest fills */
-  --red: #e2685a;
+  --red: #c8402f;
 }
+
+/* Scoped wrapper: wins over any other :root tokens (index.css, App.css, old Navbar.css) */
+.site-theme { background: var(--bg); color: var(--text); min-height: 100vh; }
+body.light-bg { background: #f7f9f3; color: #1c2416; }
 
 /* ── RESET ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -76,7 +80,7 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--amber);
-  border: 1px solid rgba(234,140,63,0.35);
+  border: 1px solid rgba(212,115,31,0.4);
   padding: 6px 12px;
   margin-bottom: 28px;
 }
@@ -190,7 +194,7 @@ img { max-width: 100%; display: block; }
   text-align: center;
   justify-self: end;
 }
-.lg-ledger-badge.active { background: rgba(95,174,72,0.16); color: var(--sage-deep); }
+.lg-ledger-badge.active { background: rgba(61,138,43,0.14); color: var(--sage-deep); }
 .lg-ledger-badge.closed { background: var(--pale); color: var(--text3); }
 .lg-ledger-cursor {
   padding: 12px 14px;
@@ -400,7 +404,7 @@ img { max-width: 100%; display: block; }
   color: var(--sage-deep);
 }
 .lg-alert-icon.warn { background: var(--amber-pale); color: var(--amber); }
-.lg-alert-icon.temp { background: rgba(107,107,224,0.16); color: #a3a3f5; }
+.lg-alert-icon.temp { background: rgba(74,74,192,0.12); color: #4a4ac0; }
 .lg-alert-tag { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text4); margin-bottom: 3px; }
 .lg-alert-title { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
 .lg-alert-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
@@ -412,7 +416,7 @@ img { max-width: 100%; display: block; }
   grid-template-columns: 40px 1.4fr 1fr 90px 90px 100px;
   padding: 12px 20px;
   background: var(--forest);
-  color: var(--sage-light);
+  color: var(--on-forest);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   text-transform: uppercase;
@@ -441,7 +445,7 @@ img { max-width: 100%; display: block; }
   text-align: center;
   justify-self: start;
 }
-.lg-buyer-status.paid { background: rgba(95,174,72,0.16); color: var(--sage-deep); }
+.lg-buyer-status.paid { background: rgba(61,138,43,0.14); color: var(--sage-deep); }
 .lg-buyer-status.pending { background: var(--amber-pale); color: var(--amber); }
 
 /* ══════════════ TESTIMONIALS ══════════════ */
@@ -486,7 +490,7 @@ img { max-width: 100%; display: block; }
   pointer-events: none;
 }
 .lg-cta-inner { position: relative; max-width: 620px; margin: 0 auto; }
-.lg-cta-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sage-light); margin-bottom: 18px; }
+.lg-cta-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-forest); margin-bottom: 18px; }
 .lg-cta-title { font-size: clamp(30px, 4vw, 48px); font-weight: 700; margin-bottom: 16px; letter-spacing: -0.02em; }
 .lg-cta-title .amber { color: var(--amber-warm); }
 .lg-cta-sub { font-size: 15px; color: rgba(255,255,255,0.72); line-height: 1.7; margin-bottom: 36px; }
@@ -497,26 +501,26 @@ img { max-width: 100%; display: block; }
 .lg-btn-cta-ghost:hover { background: rgba(255,255,255,0.08); }
 
 /* ══════════════ FOOTER ══════════════ */
-.lg-footer { background: var(--footer-bg); color: rgba(255,255,255,0.75); }
+.lg-footer { background: var(--footer-bg); color: var(--text2); }
 .lg-footer-top {
   display: grid;
   grid-template-columns: 1.6fr 1fr 1fr 1fr;
   padding: 56px 48px;
   gap: 40px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--rule);
 }
 .lg-footer-brand { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--sage-light); margin-bottom: 10px; }
-.lg-footer-desc { font-size: 12.5px; color: rgba(255,255,255,0.4); line-height: 1.65; max-width: 220px; }
-.lg-footer-head { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+.lg-footer-desc { font-size: 12.5px; color: var(--text3); line-height: 1.65; max-width: 220px; }
+.lg-footer-head { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text4); margin-bottom: 16px; }
 .lg-footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-.lg-footer-links a { font-size: 13px; color: rgba(255,255,255,0.55); transition: color 0.2s; }
+.lg-footer-links a { font-size: 13px; color: var(--text3); transition: color 0.2s; }
 .lg-footer-links a:hover { color: var(--sage-light); }
 .lg-footer-bottom {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
   padding: 20px 48px;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
-  color: rgba(255,255,255,0.3);
+  color: var(--text4);
 }
 
 /* ══════════════ COOKIE BANNER ══════════════ */

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import './LandingPage.css'
 import Navbar from './Navbar'
 import MobileMenu from './MobileMenu'
+import { NAV_LINKS } from './navLinks'
 import {
   Layers, HeartPulse, BarChart3, Home, Wrench, TrendingUp,
   Users, Wheat, Syringe, Thermometer, Egg, Leaf, Beef,
@@ -11,14 +13,6 @@ import goat from "/src/assets/goat.jpg"
 import cow from "/src/assets/cow.jpg"
 
 // ── DATA ──────────────────────────────────────────────────────
-const NAV_LINKS = [
-  { href: '#species', label: 'Species' },
-  { href: '#features', label: 'Features' },
-  { href: '#financials', label: 'Financials' },
-  { href: '#advisor', label: 'AI Advisor' },
-  { href: '#buyers', label: 'Buyers' },
-]
-
 const SPECIES = [
   {
     code: 'SP-01 / POULTRY',
@@ -541,6 +535,12 @@ const LandingPage = () => {
   useScrollReveal()
   useNavScroll()
 
+  // Paint <body> light while the landing page is mounted
+  useEffect(() => {
+    document.body.classList.add('light-bg')
+    return () => document.body.classList.remove('light-bg')
+  }, [])
+
   useEffect(() => {
     const saved = localStorage.getItem('chakfarm-cookies')
     if (!saved) {
@@ -569,20 +569,23 @@ const LandingPage = () => {
   }
 
   return (
-    <>
+    <div className="site-theme">
       <Navbar
+        theme="light"
         links={NAV_LINKS}
         actions={
           <>
-            <a href="/login" className="site-btn-ghost">Sign in</a>
-            <a href="/register" className="site-btn-solid">Get Started</a>
+            <Link to="/login" className="site-btn-ghost">Sign in</Link>
+            <Link to="/register" className="site-btn-solid">Get Started</Link>
           </>
         }
         onHamburger={() => setMenuOpen(o => !o)}
       />
       <MobileMenu
+        theme="light"
         open={menuOpen}
         links={NAV_LINKS}
+        onNavigate={() => setMenuOpen(false)}
         authLinks={[
           { to: '/login', label: 'Sign in' },
           { to: '/register', label: 'Get Started →' },
@@ -606,7 +609,7 @@ const LandingPage = () => {
         onEssential={() => saveConsent('essential')}
         onClose={() => saveConsent('declined')}
       />
-    </>
+    </div>
   )
 }
 

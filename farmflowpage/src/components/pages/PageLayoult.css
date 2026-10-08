@@ -1,0 +1,23 @@
+/* Light page shell — only affects pages wrapped in <PageLayout> */
+.light-page {
+  --bg: #f7f9f3;
+  --off-white: #ffffff;
+  --pale: #eef3e6;
+  --sage-light: #2d5a1e;
+  --text: #1c2416;
+  --text2: #3d4a33;
+  --text3: #667659;
+  --rule: rgba(0,0,0,0.12);
+  --rule-soft: rgba(0,0,0,0.06);
+
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+.page-main {
+  padding-top: 64px;          /* clear the fixed navbar */
+  min-height: 100vh;
+}
+@media (max-width: 480px) {
+  .page-main { padding-top: 56px; }
+}

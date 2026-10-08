@@ -2,22 +2,6 @@
    SITE NAVBAR — shared by every page (Navbar.jsx / MobileMenu.jsx)
    ══════════════════════════════════════════════════════════════ */
 
-:root {
-  --bg: #12150f;
-  --off-white: #171b11;
-  --pale: #1f2517;
-  --sage-light: #bfdeb0;
-  --forest: #2d5a1e;
-  --amber: #ea8c3f;
-  --amber-warm: #f4a15a;
-  --text: #f1f4ec;
-  --text2: #cdd8c2;
-  --text3: #98ab8c;
-  --rule: rgba(255,255,255,0.14);
-  --rule-soft: rgba(255,255,255,0.07);
-  --white: #ffffff;
-}
-
 .site-nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -26,7 +10,7 @@
   align-items: center;
   height: 64px;
   padding: 0 48px;
-  background: rgba(18,21,15,0.92);
+  background: var(--nav-bg, rgba(18,21,15,0.92));
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--rule);
   transition: box-shadow 0.25s;
@@ -75,6 +59,21 @@
   transition: color 0.2s;
 }
 .site-nav-links a:hover { color: var(--sage-light); }
+.site-nav-links a.active { color: var(--sage-light); box-shadow: inset 0 -3px 0 var(--amber); line-height: 64px; }
+
+/* ── Light theme (used by PageLayout pages) ───────────────── */
+.site-nav--light,
+.site-mobile-menu--light {
+  --nav-bg: rgba(247,249,243,0.94);
+  --off-white: #ffffff;
+  --pale: #eef3e6;
+  --sage-light: #2d5a1e;
+  --text: #1c2416;
+  --text2: #3d4a33;
+  --text3: #667659;
+  --rule: rgba(0,0,0,0.12);
+  --rule-soft: rgba(0,0,0,0.06);
+}
 
 .site-nav-spacer { flex: 1; }
 

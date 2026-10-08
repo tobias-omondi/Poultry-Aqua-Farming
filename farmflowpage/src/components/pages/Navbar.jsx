@@ -1,21 +1,19 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import './Navbar.css'
 
 /**
- * Shared site navbar — one component, used on every page, so the header
- * never drifts out of sync between the marketing site and the app.
+ * Shared site navbar — one component, used on every page.
  *
  * Props:
- *  - links:       [{ href, label }]  section links shown in the center
- *                 (pass [] on pages that don't need them, e.g. auth/dashboard)
+ *  - links:       [{ to, label }]  route links shown in the center
  *  - actions:     JSX rendered on the right (buttons, a plain text link, etc.)
  *  - onHamburger: function — if provided, a mobile hamburger button renders
- *                 and calls this on click (only needed when `links` is non-empty)
+ *  - theme:       'dark' (default) | 'light'
  */
-const Navbar = ({ links = [], actions = null, onHamburger = null }) => {
+const Navbar = ({ links = [], actions = null, onHamburger = null, theme = 'dark' }) => {
   return (
-    <nav className="site-nav" id="siteNav">
+    <nav className={`site-nav${theme === 'light' ? ' site-nav--light' : ''}`} id="siteNav">
       <Link to="/" className="site-nav-logo">
         <div className="site-nav-logo-mark">CF</div>
         ChakFarm
@@ -24,7 +22,14 @@ const Navbar = ({ links = [], actions = null, onHamburger = null }) => {
       {links.length > 0 && (
         <ul className="site-nav-links">
           {links.map(link => (
-            <li key={link.href}><a href={link.href}>{link.label}</a></li>
+            <li key={link.to}>
+              <NavLink
+                to={link.to}
+                className={({ isActive }) => (isActive ? 'active' : undefined)}
+              >
+                {link.label}
+              </NavLink>
+            </li>
           ))}
         </ul>
       )}
