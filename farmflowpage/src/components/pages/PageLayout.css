@@ -1,6 +1,6 @@
 /* Light page shell — only affects pages wrapped in <PageLayout> */
 .light-page {
-  --bg: #f7f9f3;
+  --bg: beige;
   --off-white: #ffffff;
   --pale: #eef3e6;
   --sage-light: #2d5a1e;

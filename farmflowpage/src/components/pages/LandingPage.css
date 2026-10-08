@@ -11,7 +11,7 @@
 /* ── TOKENS ── */
 .site-theme,
 :root {
-  --bg: #f7f9f3;            /* page base */
+  --bg: beige;            /* page base */
   --off-white: #eef3e6;     /* subtle block bg (ticker, totals row) */
   --pale: #e8efdd;          /* hover / active tint */
   --surface: #ffffff;       /* card surfaces (ledger, buyer rows, cookie bar) */
