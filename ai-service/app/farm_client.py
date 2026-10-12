@@ -1,44 +1,79 @@
+import asyncio
+from typing import Optional
+
 import httpx
-from .config import DJANGO_API_URL, DJANGO_API_TOKEN
+from fastapi import HTTPException
 
-HEADERS = {'Authorization': f'Bearer {DJANGO_API_TOKEN}'}
+from .config import DEV_DJANGO_TOKEN, DJANGO_API_URL
+
+# name -> (Django path, value to use if that section cannot be loaded)
+SECTIONS = {
+    "batches": ("/chickens/batches/", []),
+    "summary": ("/financials/summary/", {}),
+    "alerts": ("/inventory/alerts/", {}),
+    "costs": ("/financials/costs/", []),
+    "houses": ("/housing/", []),
+    "feed": ("/inventory/feed/", []),
+}
 
 
-async def get_farm_data() -> dict:
-    """
-    Fetches all relevant farm data from Django APIs.
-    This becomes the context Claude reasons over.
-    """
-    async with httpx.AsyncClient(timeout=10.0) as client:
+def auth_headers(authorization: Optional[str]) -> dict:
+    """Use the farmer's own token so Django decides what they can see."""
+    if authorization:
+        return {"Authorization": authorization}
+    if DEV_DJANGO_TOKEN:
+        return {"Authorization": f"Bearer {DEV_DJANGO_TOKEN}"}
+    raise HTTPException(401, "Missing Authorization header")
+
+
+def _unwrap(data):
+    """Django REST Framework wraps paginated lists as {"count": ..., "results": [...]}."""
+    if isinstance(data, dict) and isinstance(data.get("results"), list):
+        return data["results"]
+    return data
+
+
+async def _get(http: httpx.AsyncClient, path: str, headers: dict):
+    resp = await http.get(f"{DJANGO_API_URL}{path}", headers=headers)
+    if resp.status_code in (401, 403):
+        raise HTTPException(resp.status_code, "Django rejected the login token")
+    if resp.status_code != 200:
+        return None
+    return _unwrap(resp.json())
+
+
+async def get_farm_data(authorization: Optional[str] = None) -> dict:
+    """Fetch everything the advisor reasons over. Sections that fail are listed in 'missing'."""
+    headers = auth_headers(authorization)
+    async with httpx.AsyncClient(timeout=10.0) as http:
         try:
-            batches_res = await client.get(f'{DJANGO_API_URL}/chickens/batches/', headers=HEADERS)
-            summary_res = await client.get(f'{DJANGO_API_URL}/financials/summary/', headers=HEADERS)
-            alerts_res  = await client.get(f'{DJANGO_API_URL}/inventory/alerts/', headers=HEADERS)
-            costs_res   = await client.get(f'{DJANGO_API_URL}/financials/costs/', headers=HEADERS)
-            houses_res  = await client.get(f'{DJANGO_API_URL}/housing/', headers=HEADERS)
-            feed_res    = await client.get(f'{DJANGO_API_URL}/inventory/feed/', headers=HEADERS)
+            results = await asyncio.gather(
+                *(_get(http, path, headers) for path, _ in SECTIONS.values())
+            )
+        except httpx.RequestError as exc:
+            raise HTTPException(503, "Could not reach the farm data service") from exc
 
-            return {
-                'batches':  batches_res.json() if batches_res.status_code == 200 else [],
-                'summary':  summary_res.json() if summary_res.status_code == 200 else {},
-                'alerts':   alerts_res.json()  if alerts_res.status_code  == 200 else {},
-                'costs':    costs_res.json()   if costs_res.status_code   == 200 else [],
-                'houses':   houses_res.json()  if houses_res.status_code  == 200 else [],
-                'feed':     feed_res.json()    if feed_res.status_code    == 200 else [],
-            }
-        except httpx.RequestError as e:
-            return {'error': str(e)}
+    data, missing = {}, []
+    for (name, (_, default)), result in zip(SECTIONS.items(), results):
+        if result is None:
+            data[name] = default
+            missing.append(name)
+        else:
+            data[name] = result
+    data["missing"] = missing
+    return data
 
 
-async def get_batch_detail(batch_id: int) -> dict:
-    """Fetch deep data for a specific batch including daily logs."""
-    async with httpx.AsyncClient(timeout=10.0) as client:
+async def get_batch_detail(batch_id: int, authorization: Optional[str] = None) -> dict:
+    """Deep data for one batch, including daily logs."""
+    headers = auth_headers(authorization)
+    base = f"/chickens/batches/{batch_id}"
+    async with httpx.AsyncClient(timeout=10.0) as http:
         try:
-            batch_res   = await client.get(f'{DJANGO_API_URL}/chickens/batches/{batch_id}/summary/', headers=HEADERS)
-            logs_res    = await client.get(f'{DJANGO_API_URL}/chickens/batches/{batch_id}/logs/', headers=HEADERS)
-            return {
-                'batch': batch_res.json() if batch_res.status_code == 200 else {},
-                'logs':  logs_res.json()  if logs_res.status_code  == 200 else [],
-            }
-        except httpx.RequestError as e:
-            return {'error': str(e)}
+            batch, logs = await asyncio.gather(
+                _get(http, f"{base}/summary/", headers),
+                _get(http, f"{base}/logs/", headers),
+            )
+        except httpx.RequestError as exc:
+            raise HTTPException(503, "Could not reach the farm data service") from exc
+    return {"batch": batch or {}, "logs": logs or []}

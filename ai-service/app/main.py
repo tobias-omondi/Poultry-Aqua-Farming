@@ -1,28 +1,26 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from .config import APP_NAME, CORS_ORIGINS
 from .routes import router
 
 app = FastAPI(
-    title='FarmFlow AI Service',
-    description='Claude-powered farm advisor for FarmFlow',
-    version='1.0.0',
+    title=f"{APP_NAME} AI Service",
+    description="Gemini-powered farm advisor",
+    version="1.0.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        'http://localhost:8000',
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(router)
 
 
-@app.get('/')
+@app.get("/")
 async def root():
-    return {'service': 'FarmFlow AI', 'status': 'running'}
+    return {"service": f"{APP_NAME} AI", "status": "running"}
