@@ -2,6 +2,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -72,6 +73,14 @@ TEMPLATES = [
         },
     },
 ]
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",  # local fallback
+        conn_max_age=600,
+    )
+}
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
