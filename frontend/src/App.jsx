@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
 import Notifications from './pages/Notifications'
 import Settings from './pages/Settings'
+import ChakaFarmAi from './pages/ChakaFarmAi'
 
 function hasAuthToken() {
   return Boolean(localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token'))
@@ -76,6 +77,14 @@ function App() {
               element={
                 <RequireAuth>
                   <Housing />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/FlowAi"
+              element={
+                <RequireAuth>
+                  <ChakaFarmAi />
                 </RequireAuth>
               }
             />

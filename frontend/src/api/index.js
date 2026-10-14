@@ -311,3 +311,92 @@ export const updateHouse = (id, data) => API.patch(`/housing/${id}/`, data)
   export const markAllNotificationsRead = () => API.post('/notifications/mark-all-read/')
   export const deleteNotification = (id) => API.delete(`/notifications/${id}/`)
   
+
+
+  /* =========================================================
+   AI (ChakaFarm AI)
+========================================================= */
+
+
+const AI_URL = (import.meta.env.VITE_AI_URL || 'http://127.0.0.1:8001').replace(/\/$/, '')
+
+// Turns any failed response into a readable message
+const errorMessage = async (res) => {
+  try {
+    const data = await res.json()
+    return data.detail || data.error || data.message || `Request failed (${res.status})`
+  } catch {
+    return `Request failed (${res.status})`
+  }
+}
+
+const authHeaders = () => {
+  const token = getStoredToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+// Expired or rejected login: clear it and go to the login page.
+const checkSession = (res) => {
+  if (res.status !== 401) return
+  clearAuthSession()
+  window.location.href = '/login'
+  throw new Error('Session expired. Please log in again.')
+}
+
+// Returns the insights object (alerts, recommendations, forecast)
+export const getInsights = async () => {
+  const res = await fetch(`${AI_URL}/ai/insights`, {
+    headers: authHeaders(),
+    signal: AbortSignal.timeout(120000), // the free Render server can be slow to wake
+  })
+  checkSession(res)
+  if (!res.ok) throw new Error(await errorMessage(res))
+  return res.json()
+}
+
+// Streams the reply. Calls onChunk(text) for each piece as it arrives.
+export const streamChat = async ({ message, history, batchId }, onChunk) => {
+  const res = await fetch(`${AI_URL}/ai/chat/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ message, history, batch_id: batchId ? Number(batchId) : null }),
+  })
+  checkSession(res)
+  if (!res.ok) throw new Error(await errorMessage(res))
+  if (!res.body) throw new Error('Streaming is not supported in this browser.')
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const events = buffer.split('\n\n') // the server sends: data: {"text": "..."}
+    buffer = events.pop() // keep any half-received event for the next round
+    for (const ev of events) {
+      const line = ev.replace(/^data: /, '').trim()
+      if (!line || line === '[DONE]') continue
+      const data = JSON.parse(line)
+      if (data.error) throw new Error(data.error)
+      onChunk(data.text)
+    }
+  }
+}
+
+// Uploads a photo and returns the report object
+export const analyzeImage = async (file, batchId, age) => {
+  const form = new FormData()
+  form.append('file', file) // the server expects the field to be called "file"
+  if (batchId) form.append('batch_id', batchId)
+  if (age) form.append('age_days', age)
+
+  const res = await fetch(`${AI_URL}/ai/analyze-image`, {
+    method: 'POST',
+    headers: authHeaders(), // don't set Content-Type, the browser adds it
+    body: form,
+  })
+  checkSession(res)
+  if (!res.ok) throw new Error(await errorMessage(res))
+  return res.json()
+}
