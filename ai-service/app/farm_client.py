@@ -68,7 +68,7 @@ async def get_batch_detail(batch_id: int, authorization: Optional[str] = None) -
     """Deep data for one batch, including daily logs."""
     headers = auth_headers(authorization)
     base = f"/chickens/batches/{batch_id}"
-    async with httpx.AsyncClient(timeout=10.0) as http:
+    async with httpx.AsyncClient(timeout=60.0) as http:
         try:
             batch, logs = await asyncio.gather(
                 _get(http, f"{base}/summary/", headers),
