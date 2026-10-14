@@ -318,7 +318,7 @@ export const updateHouse = (id, data) => API.patch(`/housing/${id}/`, data)
 ========================================================= */
 
 
-const AI_URL = (import.meta.env.VITE_AI_URL || 'http://127.0.0.1:8001').replace(/\/$/, '')
+const AI_URL = (import.meta.env.VITE_AI_URL || 'https://farmflowai-brcp.onrender.com/').replace(/\/$/, '')
 
 // Turns any failed response into a readable message
 const errorMessage = async (res) => {
