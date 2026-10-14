@@ -22,3 +22,19 @@ __pycache__/
 # Optional env files
 .env
 .env.*
+.env
+# secrets
+.env
+.env.*
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+
+# Node
+node_modules/
+dist/
