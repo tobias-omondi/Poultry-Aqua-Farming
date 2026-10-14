@@ -18,10 +18,10 @@ DJANGO_API_URL = os.getenv("DJANGO_API_URL", "https://poultry-farming.onrender.c
 DEV_DJANGO_TOKEN = os.getenv("DEV_DJANGO_TOKEN")
 
 CORS_ORIGINS = [
-    o.strip()
+    o.strip().rstrip("/")
     for o in os.getenv(
         "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000, https://poultry-aqua-farming.vercel.app/",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,https://poultry-aqua-farming.vercel.app",
     ).split(",")
     if o.strip()
 ]
