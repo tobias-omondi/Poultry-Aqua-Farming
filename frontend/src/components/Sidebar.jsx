@@ -24,7 +24,7 @@ const links = [
   { to: '/financials', label: 'Financials', icon: DollarSign },
   { to: '/inventory', label: 'Inventory', icon: Package },
   { to: '/housing', label: 'Housing', icon: Home },
-  { to: '/FlowAi', label: 'Flow AI', icon: Bot },
+  { to: '/flowAi', label: 'Flow AI', icon: Bot },
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]

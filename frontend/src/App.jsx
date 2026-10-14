@@ -81,7 +81,7 @@ function App() {
               }
             />
             <Route
-              path="/FlowAi"
+              path="/flowAi"
               element={
                 <RequireAuth>
                   <ChakaFarmAi />
