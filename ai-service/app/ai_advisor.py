@@ -1,6 +1,8 @@
 import json
 import logging
+from datetime import date, datetime, timedelta  # EGGS
 from typing import Optional
+from zoneinfo import ZoneInfo  # EGGS
 
 from fastapi import HTTPException
 from google import genai
@@ -8,12 +10,14 @@ from google.genai import types
 from pydantic import BaseModel
 
 from .config import APP_NAME, GEMINI_API_KEY, GEMINI_MODEL
+from .egg_client import get_egg_data  # EGGS
 from .farm_client import get_batch_detail, get_farm_data
 
 log = logging.getLogger(__name__)
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 MAX_HISTORY_TURNS = 20
+EGG_WINDOW_DAYS = 30  # EGGS
 
 
 def kes(value) -> str:
@@ -28,6 +32,133 @@ def as_list(value) -> list:
     return value if isinstance(value, list) else []
 
 
+# ------------------------------------------------------------------- eggs
+# EGGS: everything in this section is new.
+def _num(value) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _day(value) -> Optional[date]:
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except ValueError:
+        return None
+
+
+def summarise_eggs(eggs: dict, today: date) -> dict:
+    """Does the egg maths in Python so the model reads numbers instead of computing them."""
+    collections = []
+    for row in as_list(eggs.get("collections")):
+        if isinstance(row, dict) and (d := _day(row.get("collection_date"))):
+            collections.append((d, row))
+
+    sales = []
+    for row in as_list(eggs.get("sales")):
+        if isinstance(row, dict) and (d := _day(row.get("sale_date"))):
+            sales.append((d, row))
+
+    window_start = today - timedelta(days=EGG_WINDOW_DAYS)
+
+    def collected(start: date, end: date) -> int:
+        return int(sum(_num(r.get("total_eggs_collected")) for d, r in collections if start < d <= end))
+
+    recent = [(d, r) for d, r in collections if d > window_start]
+    collected_30 = int(sum(_num(r.get("total_eggs_collected")) for _, r in recent))
+    broken_30 = int(sum(_num(r.get("broken")) for _, r in recent))
+    rotten_30 = int(sum(_num(r.get("rotten")) for _, r in recent))
+    days_recorded = len({d for d, _ in recent})
+
+    last_7 = collected(today - timedelta(days=7), today)
+    previous_7 = collected(today - timedelta(days=14), today - timedelta(days=7))
+
+    completed = [r for d, r in sales if d > window_start and r.get("status") == "completed"]
+    pending = [r for _, r in sales if r.get("status") == "pending"]
+    sold_eggs = int(sum(_num(r.get("eggs")) for r in completed))
+    sold_amount = sum(_num(r.get("total_sale_amount")) for r in completed)
+
+    recent_collections = [
+        {
+            "date": str(d),
+            "collected": r.get("total_eggs_collected"),
+            "broken": r.get("broken"),
+            "rotten": r.get("rotten"),
+            "notes": r.get("notes", ""),
+        }
+        for d, r in sorted(recent, key=lambda x: x[0], reverse=True)
+    ]
+    recent_sales = [
+        {
+            "date": str(d),
+            "customer": r.get("customer_name", ""),
+            "eggs": r.get("eggs"),
+            "price_per_egg": r.get("price_per_egg"),
+            "total": r.get("total_sale_amount"),
+            "status": r.get("status"),
+        }
+        for d, r in sorted(sales, key=lambda x: x[0], reverse=True)
+        if d > window_start
+    ]
+
+    return {
+        "as_of": str(today),
+        "window_days": EGG_WINDOW_DAYS,
+        "collection": {
+            "days_with_records": days_recorded,
+            "eggs_collected": collected_30,
+            "average_per_recorded_day": round(collected_30 / days_recorded, 1) if days_recorded else None,
+            "broken": broken_30,
+            "rotten": rotten_30,
+            "loss_percent": round((broken_30 + rotten_30) / collected_30 * 100, 1) if collected_30 else None,
+            "last_7_days": last_7,
+            "previous_7_days": previous_7,
+            "change_percent_vs_previous_7": (
+                round((last_7 - previous_7) / previous_7 * 100, 1) if previous_7 else None
+            ),
+        },
+        "sales": {
+            "completed_orders": len(completed),
+            "eggs_sold": sold_eggs,
+            "revenue": round(sold_amount),
+            "average_price_per_egg": round(sold_amount / sold_eggs, 2) if sold_eggs else None,
+            "pending_orders": len(pending),
+            "pending_eggs": int(sum(_num(r.get("eggs")) for r in pending)),
+            "pending_amount": round(sum(_num(r.get("total_sale_amount")) for r in pending)),
+        },
+        "recent_collections": recent_collections[:30],
+        "recent_sales": recent_sales[:30],
+    }
+
+
+def build_egg_block(eggs: Optional[dict]) -> str:
+    if eggs is None:
+        return "Egg data: could not be loaded."
+    if not as_list(eggs.get("collections")) and not as_list(eggs.get("sales")):
+        return "Egg data: no egg collections or sales recorded."
+    today = datetime.now(ZoneInfo("Africa/Nairobi")).date()
+    summary = summarise_eggs(eggs, today)
+    return (
+        f"Egg production and sales (last {EGG_WINDOW_DAYS} days). Figures are already calculated, use them as given:\n"
+        f"{json.dumps(summary, default=str)}\n"
+        "Egg stock on hand is not tracked. Do not guess it."
+    )
+
+
+async def load_farm_data(authorization: Optional[str]) -> dict:
+    """Loads the normal farm data, then adds eggs. A failed egg fetch is listed in 'missing'."""
+    farm_data = await get_farm_data(authorization)
+    try:
+        farm_data["eggs"] = await get_egg_data(authorization)
+    except Exception:
+        log.exception("Could not load egg data")
+        farm_data["eggs"] = None
+        farm_data["missing"] = [*as_list(farm_data.get("missing")), "eggs"]
+    return farm_data
+
+
+# ----------------------------------------------------------- system prompt
 def build_system_prompt(farm_data: dict) -> str:
     """Gives the model the farmer's current data and the rules for answering."""
     batches = as_list(farm_data.get("batches"))
@@ -44,6 +175,8 @@ def build_system_prompt(farm_data: dict) -> str:
 
     low_feed_names = ", ".join(str(f.get("feed_type", "")) for f in low_feed) or "none"
     low_med_names = ", ".join(str(m.get("name", "")) for m in low_meds) or "none"
+
+    egg_block = build_egg_block(farm_data.get("eggs"))  # EGGS
 
     detail = farm_data.get("batch_detail")
     detail_block = ""
@@ -89,6 +222,8 @@ Housing:
 
 Recent costs (latest 50):
 {json.dumps(costs, default=str) if costs else 'none recorded'}
+
+{egg_block}
 {detail_block}{missing_line}
 YOUR ROLE
 - Answer questions about this farm's data.
@@ -98,6 +233,9 @@ YOUR ROLE
 - For profit forecasts, estimate from the current batch data and say it is an estimate.
 - If the data is not enough to answer, say so. Never invent numbers; only use what is above.
 - You give guidance, not veterinary diagnoses. For sick birds, suggest seeing a vet.
+- Egg collection and egg sales are included above. Pending egg sales are not income yet.
+- Egg records are not linked to a batch or house, so never say which batch laid the eggs.
+- A drop in daily eggs may come from missed records, so mention that before blaming the flock.
 
 Reply in the language the farmer writes in. If they write in Swahili, reply in Swahili.
 """
@@ -143,7 +281,7 @@ async def prepare_chat(
     message: str, history: list, batch_id: Optional[int], authorization: Optional[str]
 ):
     """Loads the data and builds the request. Errors here become normal HTTP errors."""
-    farm_data = await get_farm_data(authorization)
+    farm_data = await load_farm_data(authorization)  # EGGS: was get_farm_data
     if batch_id:
         farm_data["batch_detail"] = await get_batch_detail(batch_id, authorization)
     contents = to_contents(history, message)
@@ -197,13 +335,17 @@ INSIGHTS_PROMPT = (
     "Analyse this farmer's data. Return alerts for problems you see (level: warning, info or danger), "
     "recommendations with a priority (high, medium or low) and a clear action, and a short profit "
     "forecast for the next 30 days based on the active batches, with your confidence "
-    "(high, medium or low). Only use numbers that appear in the data."
+    "(high, medium or low). "
+    # EGGS: next two lines are new
+    "Also check the egg data for a falling 7-day collection trend, a high share of broken or rotten eggs, "
+    "unpaid pending sales and a low average price per egg. "
+    "Only use numbers that appear in the data."
 )
 
 
 async def get_auto_insights(authorization: Optional[str] = None) -> dict:
     """Proactive insights, returned as structured JSON without the farmer asking."""
-    farm_data = await get_farm_data(authorization)
+    farm_data = await load_farm_data(authorization)  # EGGS: was get_farm_data
     config = _config(
         build_system_prompt(farm_data),
         response_mime_type="application/json",

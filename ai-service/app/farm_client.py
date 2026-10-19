@@ -9,6 +9,7 @@ from .config import DEV_DJANGO_TOKEN, DJANGO_API_URL
 # name -> (Django path, value to use if that section cannot be loaded)
 SECTIONS = {
     "batches": ("/chickens/batches/", []),
+    "eggs": ("/eggs/", []),
     "summary": ("/financials/summary/", {}),
     "alerts": ("/inventory/alerts/", {}),
     "costs": ("/financials/costs/", []),
