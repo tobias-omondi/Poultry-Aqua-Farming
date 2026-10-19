@@ -15,12 +15,15 @@ import {
   Bell,
   Settings,
   LogOut,
+  EggIcon
 } from 'lucide-react'
 import { logout as apiLogout, clearAuthSession } from '../api'
 
 const links = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/batches', label: 'Batches', icon: Bird },
+  {to: '/eggs', label: 'Eggs', icon: EggIcon
+  },
   { to: '/financials', label: 'Financials', icon: DollarSign },
   { to: '/inventory', label: 'Inventory', icon: Package },
   { to: '/housing', label: 'Housing', icon: Home },

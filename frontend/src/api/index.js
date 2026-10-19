@@ -134,6 +134,20 @@ export const deleteDailyLog = (
     `/chickens/batches/${batchId}/logs/${logId}/`
   )
 
+// =========================================================
+
+// EGGS 
+export const getEggs = () => API.get('/eggs/collections/')
+export const createEgg = (data) => API.post('/eggs/collections/', data)
+export const deleteEgg = (id) => API.delete(`/eggs/collections/${id}/`)
+
+export const getEggSales = () => API.get('/eggs/sales/')
+export const createEggSale = (data) => API.post('/eggs/sales/', data)
+export const deleteEggSale = (id) => API.delete(`/eggs/sales/${id}/`)
+
+export const getIncubations = () => API.get('/incubator/incubation-batches/')
+export const createIncubation = (data) => API.post('/incubator/incubation-batches/', data)
+export const deleteIncubation = (id) => API.delete(`/incubator/incubation-batches/${id}/`)
 /* =========================================================
    FINANCIALS
 ========================================================= */

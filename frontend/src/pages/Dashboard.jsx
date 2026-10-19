@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { getFarmSummary, getBatches, getLowStockAlerts } from '../api/index'
+import { getFarmSummary, getBatches, getLowStockAlerts, getEggSales } from '../api/index'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useTheme } from '../context/ThemeContext'
-import { Leaf, Sun, Moon, TrendingUp, TrendingDown, DollarSign, Bird } from 'lucide-react'
+import { Leaf, Sun, Moon, TrendingUp, TrendingDown, DollarSign, Bird, Egg } from 'lucide-react'
 
 // ── Mini Calendar ──────────────────────────────────────────────
 function MiniCalendar() {
@@ -98,7 +98,7 @@ function StatCard({ label, value, sub, icon, colorCls }) {
     <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 transition-all duration-300">
       <div className="flex justify-between items-start mb-3">
         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">{label}</span>
-        <div className="text-var(--text-primary)">{icon}</div>
+        <div className="text-[var(--text-primary)]">{icon}</div>
       </div>
       <div className={`text-2xl font-extrabold tracking-tight mb-1 ${colorCls}`}>{value}</div>
       <div className="text-xs text-slate-500">{sub}</div>
@@ -112,6 +112,7 @@ export default function Dashboard() {
   const [summary, setSummary] = useState(null)
   const [batches, setBatches] = useState([])
   const [alerts, setAlerts] = useState(null)
+  const [eggSales, setEggSales] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -119,10 +120,12 @@ export default function Dashboard() {
       getFarmSummary(),
       getBatches(),
       getLowStockAlerts(),
-    ]).then(([s, b, a]) => {
+      getEggSales().catch(() => ({ data: [] })),
+    ]).then(([s, b, a, e]) => {
       setSummary(s.data)
       setBatches(b.data)
       setAlerts(a.data)
+      setEggSales(e.data || [])
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -134,10 +137,29 @@ export default function Dashboard() {
     </div>
   )
 
+  // ── Egg money ────────────────────────────────────────────────
+  const saleAmount = (s) =>
+    s.total_sale_amount != null
+      ? Number(s.total_sale_amount)
+      : Number(s.eggs || 0) * Number(s.price_per_egg || 0)
+
+  const completedEggSales = eggSales.filter(s => s.status === 'completed')
+  const pendingEggSales = eggSales.filter(s => s.status === 'pending')
+
+  const eggRevenue = completedEggSales.reduce((a, s) => a + saleAmount(s), 0)
+  const eggsSold = completedEggSales.reduce((a, s) => a + Number(s.eggs || 0), 0)
+  const eggPending = pendingEggSales.reduce((a, s) => a + saleAmount(s), 0)
+
+  // ── Farm totals (birds + eggs) ───────────────────────────────
+  const birdRevenue = Number(summary?.total_revenue ?? 0)
+  const totalRevenue = birdRevenue + eggRevenue
+  const totalCosts = Number(summary?.total_costs ?? 0)
+  const profit = totalRevenue - totalCosts
+
   const chartData = [
-    { name: 'Start', revenue: Math.round((summary?.total_revenue ?? 0) * 0.35), costs: Math.round((summary?.total_costs ?? 0) * 0.35), profit: Math.round((summary?.profit ?? 0) * 0.35) },
-    { name: 'Mid', revenue: Math.round((summary?.total_revenue ?? 0) * 0.7), costs: Math.round((summary?.total_costs ?? 0) * 0.7), profit: Math.round((summary?.profit ?? 0) * 0.7) },
-    { name: 'Now', revenue: summary?.total_revenue ?? 0, costs: summary?.total_costs ?? 0, profit: summary?.profit ?? 0 },
+    { name: 'Start', revenue: Math.round(totalRevenue * 0.35), costs: Math.round(totalCosts * 0.35), profit: Math.round(profit * 0.35) },
+    { name: 'Mid', revenue: Math.round(totalRevenue * 0.7), costs: Math.round(totalCosts * 0.7), profit: Math.round(profit * 0.7) },
+    { name: 'Now', revenue: totalRevenue, costs: totalCosts, profit },
   ]
 
   const dateStr = new Date().toLocaleDateString('en-KE', {
@@ -165,11 +187,42 @@ export default function Dashboard() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        <StatCard label="Total Revenue" value={`KES ${Number(summary?.total_revenue ?? 0).toLocaleString()}`} sub="All sales combined" icon={<TrendingUp className="w-5 h-5" />} colorCls="text-green-400" />
-        <StatCard label="Total Costs" value={`KES ${Number(summary?.total_costs ?? 0).toLocaleString()}`} sub="All expenses combined" icon={<TrendingDown className="w-5 h-5" />} colorCls="text-red-400" />
-        <StatCard label="Net Profit" value={`KES ${Number(summary?.profit ?? 0).toLocaleString()}`} sub={summary?.is_profitable ? '▲ Profitable' : '▼ Running at loss'} icon={<DollarSign className="w-5 h-5" />} colorCls={(summary?.profit ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'} />
-        <StatCard label="Active Batches" value={summary?.active_batches ?? '0'} sub={`${summary?.closed_batches ?? '0'} closed`} icon={<Bird className="w-5 h-5" />} colorCls="text-amber-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+        <StatCard
+          label="Total Revenue"
+          value={`KES ${totalRevenue.toLocaleString()}`}
+          sub={`Birds ${birdRevenue.toLocaleString()} + eggs ${eggRevenue.toLocaleString()}`}
+          icon={<TrendingUp className="w-5 h-5" />}
+          colorCls="text-green-400"
+        />
+        <StatCard
+          label="Egg Sales"
+          value={`KES ${eggRevenue.toLocaleString()}`}
+          sub={`${eggsSold.toLocaleString()} eggs sold · KES ${eggPending.toLocaleString()} pending`}
+          icon={<Egg className="w-5 h-5" />}
+          colorCls="text-yellow-400"
+        />
+        <StatCard
+          label="Total Costs"
+          value={`KES ${totalCosts.toLocaleString()}`}
+          sub="All expenses combined"
+          icon={<TrendingDown className="w-5 h-5" />}
+          colorCls="text-red-400"
+        />
+        <StatCard
+          label="Net Profit"
+          value={`KES ${profit.toLocaleString()}`}
+          sub={profit >= 0 ? '▲ Profitable' : '▼ Running at loss'}
+          icon={<DollarSign className="w-5 h-5" />}
+          colorCls={profit >= 0 ? 'text-green-400' : 'text-red-400'}
+        />
+        <StatCard
+          label="Active Batches"
+          value={summary?.active_batches ?? '0'}
+          sub={`${summary?.closed_batches ?? '0'} closed`}
+          icon={<Bird className="w-5 h-5" />}
+          colorCls="text-amber-400"
+        />
       </div>
 
       {/* Chart + Calendar */}
@@ -195,7 +248,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-          <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-4">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-3">Calendar</p>
             <MiniCalendar />
@@ -207,8 +260,9 @@ export default function Dashboard() {
               { label: 'Total Birds', value: batches.reduce((a, b) => a + (b.current_count || 0), 0) },
               { label: 'Avg Mortality', value: batches.length ? `${(batches.reduce((a, b) => a + (b.mortality_percentage || 0), 0) / batches.length).toFixed(1)}%` : '0%' },
               { label: 'Total Batches', value: batches.length },
-            ].map((s, i) => (
-              <div key={i} className={`flex justify-between py-2 ${i < 2 ? 'border-b border-[var(--border)]' : ''}`}>
+              { label: 'Eggs Sold', value: eggsSold.toLocaleString() },
+            ].map((s, i, arr) => (
+              <div key={i} className={`flex justify-between py-2 ${i < arr.length - 1 ? 'border-b border-[var(--border)]' : ''}`}>
                 <span className="text-xs text-slate-500">{s.label}</span>
                 <span className="text-sm font-bold text-[var(--text-primary)]">{s.value}</span>
               </div>
@@ -219,7 +273,7 @@ export default function Dashboard() {
 
       {/* Alerts */}
       {(alerts?.total_alerts ?? 0) > 0 && (
-          <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 mb-5">
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 mb-5">
           <div className="flex items-center gap-2 mb-4">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Stock Alerts</p>
             <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold">{alerts.total_alerts} low</span>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Batches from './pages/Batches'
+import  Eggs from './pages/Eggs'
 import Financials from './pages/Financials'
 import Inventory from './pages/Inventory'
 import Housing from './pages/Housing'
@@ -53,6 +54,14 @@ function App() {
               element={
                 <RequireAuth>
                   <Batches />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/eggs"
+              element={
+                <RequireAuth>
+                  <Eggs />
                 </RequireAuth>
               }
             />
