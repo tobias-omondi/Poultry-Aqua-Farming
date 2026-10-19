@@ -11,4 +11,6 @@ urlpatterns = [
     path('api/housing/', include('housing.urls')),
     path('api/inventory/', include('inventory.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/eggs/', include('eggs.urls')),
+    path('api/incubator/', include('incubator.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

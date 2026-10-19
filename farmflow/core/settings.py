@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'financials',
     'housing',
     'notifications',
+    'eggs',
+    'incubator',
 ]
 
 MIDDLEWARE = [
