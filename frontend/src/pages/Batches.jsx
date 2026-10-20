@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, ClipboardList, X, Bird, Egg, Activity } from 'lucide-react'
 import { getBatches, createBatch, updateBatch, deleteBatch, getDailyLogs, createDailyLog } from '../api/index'
 
-const BREEDS = ['broiler', 'layer', 'kienyeji']
+// NOTE: these values must match the backend's choices exactly.
+// If your Django model uses 'improved_kienyeji', change the value below.
+const BREEDS = [
+  { value: 'broiler', label: 'Broiler' },
+  { value: 'layer', label: 'Layer' },
+  { value: 'improved kienyeji', label: 'Improved Kienyeji' },
+]
 const STATUSES = ['active', 'harvested', 'closed']
 
 const statusCls = (s) => ({
@@ -18,6 +24,30 @@ const EMPTY_BATCH = {
 }
 
 const EMPTY_LOG = { date: '', feed_consumed_kg: '', deaths: 0, average_weight_kg: '', notes: '' }
+
+// ── Payload cleaners ───────────────────────────────────────────
+// Form inputs give strings; the API wants numbers and null for empty optional fields.
+const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
+
+const cleanBatch = (form) => {
+  const payload = { ...form }
+  payload.initial_count = toNum(payload.initial_count)
+  payload.current_count = toNum(payload.current_count)
+  payload.purchase_cost = toNum(payload.purchase_cost)
+  if (!payload.end_date) payload.end_date = null
+  // read-only fields that come back from the API when editing
+  delete payload.id
+  delete payload.mortality_percentage
+  return payload
+}
+
+const cleanLog = (form) => {
+  const payload = { ...form }
+  payload.feed_consumed_kg = toNum(payload.feed_consumed_kg)
+  payload.deaths = toNum(payload.deaths) ?? 0
+  payload.average_weight_kg = toNum(payload.average_weight_kg)
+  return payload
+}
 
 // ── Shared input class ─────────────────────────────────────────
 const inp = "w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-green-500 transition-colors placeholder:text-slate-600"
@@ -48,8 +78,24 @@ function F({ label, children }) {
   )
 }
 
+// ── Server error box ───────────────────────────────────────────
+function ErrorBox({ error }) {
+  if (!error) return null
+  const entries = typeof error === 'object' ? Object.entries(error) : [['error', error]]
+  return (
+    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+      {entries.map(([field, msg]) => (
+        <div key={field}>
+          <span className="font-bold">{field}:</span>{' '}
+          {Array.isArray(msg) ? msg.join(' ') : typeof msg === 'object' ? JSON.stringify(msg) : String(msg)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Batch form ─────────────────────────────────────────────────
-function BatchForm({ initial, onSave, onClose, saving }) {
+function BatchForm({ initial, onSave, onClose, saving, error }) {
   const [form, setForm] = useState(initial)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   return (
@@ -58,7 +104,7 @@ function BatchForm({ initial, onSave, onClose, saving }) {
         <F label="Batch Name"><input className={inp} value={form.name} onChange={e => set('name', e.target.value)} placeholder="Batch #1" required /></F>
         <F label="Breed">
           <select className={inp} value={form.breed} onChange={e => set('breed', e.target.value)}>
-            {BREEDS.map(b => <option key={b} value={b}>{b.charAt(0).toUpperCase() + b.slice(1)}</option>)}
+            {BREEDS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
           </select>
         </F>
         <F label="Initial Count"><input className={inp} type="number" value={form.initial_count} onChange={e => set('initial_count', e.target.value)} placeholder="200" required /></F>
@@ -72,7 +118,8 @@ function BatchForm({ initial, onSave, onClose, saving }) {
           </select>
         </F>
       </div>
-      <F label="Notes"><textarea className={`${inp} resize-none`} rows={2} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Optional notes..." /></F>
+      <F label="Notes"><textarea className={`${inp} resize-none`} rows={2} value={form.notes || ''} onChange={e => set('notes', e.target.value)} placeholder="Optional notes..." /></F>
+      <ErrorBox error={error} />
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-slate-400 text-sm font-semibold cursor-pointer bg-transparent hover:text-[var(--text-primary)] transition-colors">Cancel</button>
         <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl bg-green-500 text-black text-sm font-bold hover:bg-green-400 transition-colors cursor-pointer disabled:opacity-50">{saving ? 'Saving...' : 'Save Batch'}</button>
@@ -82,7 +129,7 @@ function BatchForm({ initial, onSave, onClose, saving }) {
 }
 
 // ── Log form ───────────────────────────────────────────────────
-function LogForm({ batchId, onSave, onClose, saving }) {
+function LogForm({ batchId, onSave, onClose, saving, error }) {
   const [form, setForm] = useState({ ...EMPTY_LOG, batch: batchId })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   return (
@@ -94,6 +141,7 @@ function LogForm({ batchId, onSave, onClose, saving }) {
         <F label="Avg Weight (kg)"><input className={inp} type="number" step="0.001" value={form.average_weight_kg} onChange={e => set('average_weight_kg', e.target.value)} placeholder="1.250" /></F>
       </div>
       <F label="Notes"><textarea className={`${inp} resize-none`} rows={2} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Anything unusual today?" /></F>
+      <ErrorBox error={error} />
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-slate-400 text-sm font-semibold cursor-pointer bg-transparent">Cancel</button>
         <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl bg-green-500 text-black text-sm font-bold hover:bg-green-400 transition-colors cursor-pointer disabled:opacity-50">{saving ? 'Saving...' : 'Save Log'}</button>
@@ -108,6 +156,7 @@ function LogsDrawer({ batch, onClose, onEdit, onDelete }) {
   const [logsLoading, setLogsLoading] = useState(true)
   const [showLogForm, setShowLogForm] = useState(false)
   const [logSaving, setLogSaving] = useState(false)
+  const [logError, setLogError] = useState(null)
 
   useEffect(() => {
     getDailyLogs(batch.id).then(r => setLogs(r.data)).finally(() => setLogsLoading(false))
@@ -115,7 +164,14 @@ function LogsDrawer({ batch, onClose, onEdit, onDelete }) {
 
   const handleLogSave = (form) => {
     setLogSaving(true)
-    createDailyLog(form).then(r => { setLogs(p => [r.data, ...p]); setShowLogForm(false) }).finally(() => setLogSaving(false))
+    setLogError(null)
+    createDailyLog(cleanLog(form))
+      .then(r => { setLogs(p => [r.data, ...p]); setShowLogForm(false) })
+      .catch(err => {
+        console.log('Log error:', err.response?.data)
+        setLogError(err.response?.data ?? { detail: 'Something went wrong' })
+      })
+      .finally(() => setLogSaving(false))
   }
 
   const totalFeed = logs.reduce((a, l) => a + Number(l.feed_consumed_kg || 0), 0)
@@ -170,12 +226,12 @@ function LogsDrawer({ batch, onClose, onEdit, onDelete }) {
           {/* Daily Logs */}
           <div className="flex justify-between items-center mb-3">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Daily Logs</p>
-            <button onClick={() => setShowLogForm(true)} className="text-xs px-3 py-1.5 rounded-lg bg-green-500 text-black font-bold hover:bg-green-400 transition-colors cursor-pointer border-none">+ Add Log</button>
+            <button onClick={() => { setLogError(null); setShowLogForm(true) }} className="text-xs px-3 py-1.5 rounded-lg bg-green-500 text-black font-bold hover:bg-green-400 transition-colors cursor-pointer border-none">+ Add Log</button>
           </div>
 
           {showLogForm && (
             <div className="mb-4 p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-              <LogForm batchId={batch.id} onSave={handleLogSave} onClose={() => setShowLogForm(false)} saving={logSaving} />
+              <LogForm batchId={batch.id} onSave={handleLogSave} onClose={() => setShowLogForm(false)} saving={logSaving} error={logError} />
             </div>
           )}
 
@@ -214,6 +270,7 @@ export default function Batches() {
   const [batches, setBatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
   const [showCreate, setShowCreate] = useState(false)
   const [editBatch, setEditBatch] = useState(null)
   const [logsBatch, setLogsBatch] = useState(null)
@@ -224,9 +281,38 @@ export default function Batches() {
   const load = () => getBatches().then(r => setBatches(r.data)).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
 
-  const handleCreate = (form) => { setSaving(true); createBatch(form).then(r => { setBatches(p => [r.data, ...p]); setShowCreate(false) }).finally(() => setSaving(false)) }
-  const handleUpdate = (form) => { setSaving(true); updateBatch(editBatch.id, form).then(r => { setBatches(p => p.map(b => b.id === r.data.id ? r.data : b)); setEditBatch(null) }).finally(() => setSaving(false)) }
-  const handleDelete = (b) => { deleteBatch(b.id).then(() => { setBatches(p => p.filter(x => x.id !== b.id)); setDeleteConfirm(null) }) }
+  const openCreate = () => { setError(null); setShowCreate(true) }
+  const openEdit = (b) => { setError(null); setEditBatch(b) }
+
+  const handleCreate = (form) => {
+    setSaving(true)
+    setError(null)
+    createBatch(cleanBatch(form))
+      .then(r => { setBatches(p => [r.data, ...p]); setShowCreate(false) })
+      .catch(err => {
+        console.log('Server says:', err.response?.data)
+        setError(err.response?.data ?? { detail: 'Something went wrong' })
+      })
+      .finally(() => setSaving(false))
+  }
+
+  const handleUpdate = (form) => {
+    setSaving(true)
+    setError(null)
+    updateBatch(editBatch.id, cleanBatch(form))
+      .then(r => { setBatches(p => p.map(b => b.id === r.data.id ? r.data : b)); setEditBatch(null) })
+      .catch(err => {
+        console.log('Server says:', err.response?.data)
+        setError(err.response?.data ?? { detail: 'Something went wrong' })
+      })
+      .finally(() => setSaving(false))
+  }
+
+  const handleDelete = (b) => {
+    deleteBatch(b.id)
+      .then(() => { setBatches(p => p.filter(x => x.id !== b.id)); setDeleteConfirm(null) })
+      .catch(err => console.log('Delete error:', err.response?.data))
+  }
 
   const counts = { all: batches.length, active: batches.filter(b => b.status === 'active').length, harvested: batches.filter(b => b.status === 'harvested').length, closed: batches.filter(b => b.status === 'closed').length }
   const filtered = batches.filter(b => filter === 'all' || b.status === filter).filter(b => b.name.toLowerCase().includes(search.toLowerCase()))
@@ -246,7 +332,7 @@ export default function Batches() {
           <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Batches</h1>
           <p className="text-slate-500 text-sm mt-1">{batches.length} total batches</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-500 text-black text-sm font-bold hover:bg-green-400 transition-colors cursor-pointer border-none whitespace-nowrap">
+        <button onClick={openCreate} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-500 text-black text-sm font-bold hover:bg-green-400 transition-colors cursor-pointer border-none whitespace-nowrap">
           <Plus className="w-4 h-4" /> New Batch
         </button>
       </div>
@@ -338,7 +424,7 @@ export default function Batches() {
               <div className="pt-3 border-t border-[var(--border)] flex justify-between items-center">
                 <span className="text-[10px] text-slate-600">Click for logs →</span>
                 <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setEditBatch(b)} className="p-1.5 rounded-lg border border-[var(--border)] text-slate-400 hover:text-green-400 hover:border-green-500/50 transition-colors cursor-pointer bg-transparent">
+                  <button onClick={() => openEdit(b)} className="p-1.5 rounded-lg border border-[var(--border)] text-slate-400 hover:text-green-400 hover:border-green-500/50 transition-colors cursor-pointer bg-transparent">
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => setDeleteConfirm(b)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer border-none">
@@ -352,10 +438,10 @@ export default function Batches() {
       )}
 
       {/* Create modal */}
-      {showCreate && <Modal title="New Batch" onClose={() => setShowCreate(false)} wide><BatchForm initial={EMPTY_BATCH} onSave={handleCreate} onClose={() => setShowCreate(false)} saving={saving} /></Modal>}
+      {showCreate && <Modal title="New Batch" onClose={() => setShowCreate(false)} wide><BatchForm initial={EMPTY_BATCH} onSave={handleCreate} onClose={() => setShowCreate(false)} saving={saving} error={error} /></Modal>}
 
       {/* Edit modal */}
-      {editBatch && <Modal title={`Edit — ${editBatch.name}`} onClose={() => setEditBatch(null)} wide><BatchForm initial={editBatch} onSave={handleUpdate} onClose={() => setEditBatch(null)} saving={saving} /></Modal>}
+      {editBatch && <Modal title={`Edit — ${editBatch.name}`} onClose={() => setEditBatch(null)} wide><BatchForm initial={editBatch} onSave={handleUpdate} onClose={() => setEditBatch(null)} saving={saving} error={error} /></Modal>}
 
       {/* Delete confirm */}
       {deleteConfirm && (
@@ -373,67 +459,7 @@ export default function Batches() {
       )}
 
       {/* Logs drawer */}
-      {logsBatch && <LogsDrawer batch={logsBatch} onClose={() => setLogsBatch(null)} onEdit={b => { setLogsBatch(null); setEditBatch(b) }} onDelete={b => { setLogsBatch(null); setDeleteConfirm(b) }} />}
+      {logsBatch && <LogsDrawer batch={logsBatch} onClose={() => setLogsBatch(null)} onEdit={b => { setLogsBatch(null); openEdit(b) }} onDelete={b => { setLogsBatch(null); setDeleteConfirm(b) }} />}
     </div>
   )
-}
-
-// Put this file next to src/api/index.js  ->  src/api/ai.js
-const AI_URL = (import.meta.env.VITE_AI_URL || 'http://127.0.0.1:8001').replace(/\/$/, '')
-
-// Change this to the localStorage key your api/index.js uses for the login token.
-const TOKEN_KEY = 'access_token'
-
-const authHeaders = () => {
-  const token = localStorage.getItem(TOKEN_KEY)
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-async function parse(res) {
-  if (res.ok) return res.json()
-  const body = await res.json().catch(() => ({}))
-  throw new Error(body.detail || body.error || `Request failed (${res.status})`)
-}
-
-export const getInsights = () =>
-  fetch(`${AI_URL}/ai/insights`, { headers: authHeaders() }).then(parse)
-
-export const analyzeImage = (file, batchId, ageDays) => {
-  const fd = new FormData()
-  fd.append('file', file)
-  if (batchId) fd.append('batch_id', batchId)
-  if (ageDays) fd.append('age_days', ageDays)
-  // No Content-Type here: the browser sets it for form uploads.
-  return fetch(`${AI_URL}/ai/analyze-image`, { method: 'POST', headers: authHeaders(), body: fd }).then(parse)
-}
-
-// Reads the streamed answer piece by piece and calls onText(piece) for each one.
-export async function streamChat({ message, history, batchId }, onText) {
-  const res = await fetch(`${AI_URL}/ai/chat/stream`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ message, history, batch_id: batchId ? Number(batchId) : null }),
-  })
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.detail || `Request failed (${res.status})`)
-  }
-
-  const reader = res.body.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ''
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const events = buffer.split('\n\n')
-    buffer = events.pop() // keep any half-received event for the next round
-    for (const ev of events) {
-      const line = ev.replace(/^data: /, '').trim()
-      if (!line || line === '[DONE]') continue
-      const data = JSON.parse(line)
-      if (data.error) throw new Error(data.error)
-      onText(data.text)
-    }
-  }
 }

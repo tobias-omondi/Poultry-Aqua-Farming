@@ -59,39 +59,6 @@ function MiniCalendar() {
   )
 }
 
-// ── Buyers ─────────────────────────────────────────────────────
-const MOCK_BUYERS = [
-  { id: 1, name: 'Mama Njeri Supplies', type: 'Wholesale', lastPurchase: '2025-01-10', amount: 28000, birds: 80 },
-  { id: 2, name: 'Kenyatta Market', type: 'Retail', lastPurchase: '2025-01-08', amount: 9500, birds: 20 },
-  { id: 3, name: 'Eastleigh Butchery', type: 'Offtake', lastPurchase: '2025-01-05', amount: 42000, birds: 120 },
-]
-
-function BuyerCard({ buyer }) {
-  const initials = buyer.name.split(' ').slice(0, 2).map(w => w[0]).join('')
-  const typeCls =
-    buyer.type === 'Offtake' ? 'bg-blue-500/20 text-blue-400' :
-    buyer.type === 'Wholesale' ? 'bg-amber-500/20 text-amber-400' :
-    'bg-green-500/20 text-green-400'
-
-  return (
-    <div className="flex items-center gap-3 py-3 border-b border-[var(--border)] last:border-0">
-      <div className="w-9 h-9 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
-        {initials}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{buyer.name}</div>
-        <div className="text-xs text-slate-500 mt-0.5">{buyer.birds} birds · {buyer.lastPurchase}</div>
-      </div>
-      <div className="text-right flex-shrink-0">
-        <div className="text-sm font-bold text-[var(--text-primary)]">KES {buyer.amount.toLocaleString()}</div>
-        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${typeCls}`}>
-          {buyer.type}
-        </span>
-      </div>
-    </div>
-  )
-}
-
 // ── Stat Card ──────────────────────────────────────────────────
 function StatCard({ label, value, sub, icon, colorCls }) {
   return (
@@ -297,8 +264,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Batches + Buyers */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
+      {/* Batches (buyers removed for now) */}
+      <div className="grid grid-cols-1 gap-4">
 
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-4">Active Batches</p>
@@ -337,17 +304,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Recent Buyers</p>
-            <span className="text-xs text-green-400 font-semibold cursor-pointer hover:underline">View all →</span>
-          </div>
-          {MOCK_BUYERS.map(buyer => <BuyerCard key={buyer.id} buyer={buyer} />)}
-          <div className="mt-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 flex justify-between items-center">
-            <span className="text-xs text-green-400 font-semibold">Total from buyers</span>
-            <span className="text-sm font-extrabold text-green-400">KES {MOCK_BUYERS.reduce((a, b) => a + b.amount, 0).toLocaleString()}</span>
-          </div>
-        </div>
       </div>
     </div>
   )
