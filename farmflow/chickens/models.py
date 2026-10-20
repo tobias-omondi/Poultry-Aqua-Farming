@@ -11,7 +11,7 @@ class Batch(models.Model):
         blank=True,
     )
     BREED_CHOICES = [
-        ('kienyeji', 'Kienyeji'), # main  local breed
+        ('improved kienyeji', 'Improved Kienyeji'), # main  local breed
         ('broiler', 'Broiler'),
         ('layer', 'Layer'),
     ]
