@@ -5,23 +5,16 @@ from django.dispatch import receiver
 
 
 class Profile(models.Model):
-    ROLE_CHOICES = [
-        ('owner', 'Farm Owner'),
-        ('worker', 'Farm Worker'),
-    ]
-
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile'
     )
     full_name = models.CharField(max_length=200, blank=True)
     phone = models.CharField(max_length=20, blank=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='owner')
     farm_name = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} — {self.role} - {self.email if self.email else 'No Email'}"
-    
+        return f"{self.user.username} - {self.user.email if self.user.email else 'No Email'}"
 
 
 @receiver(post_save, sender=User)
@@ -34,7 +27,6 @@ def create_profile(sender, instance, created, **kwargs):
 def save_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
-
 
 class CookieConsent(models.Model):
     CONSENT_CHOICES = [

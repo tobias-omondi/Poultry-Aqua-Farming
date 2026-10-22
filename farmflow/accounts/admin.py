@@ -4,9 +4,8 @@ from .models import Profile, CookieConsent
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'full_name', 'role', 'farm_name', 'phone']
-    list_filter = ['role']
-    search_fields = ['user__username', 'full_name', 'farm_name']
+    list_display = ('user', 'full_name', 'farm_name')
+    list_filter = ('created_at',)
 
 @admin.register(CookieConsent)
 class CookieConsentAdmin(admin.ModelAdmin):

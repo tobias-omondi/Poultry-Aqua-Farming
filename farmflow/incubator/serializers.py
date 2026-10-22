@@ -11,3 +11,4 @@ class IncubationBatchSerializer(serializers.ModelSerializer):
         model = IncubationBatch
         fields = "__all__"
         read_only_fields = ["owner"]
+

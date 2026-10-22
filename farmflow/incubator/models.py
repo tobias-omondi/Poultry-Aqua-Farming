@@ -4,7 +4,11 @@ from django.db import models
 
 
 class IncubationBatch(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='incubation_batches',
+    )
     batch_name = models.CharField(max_length=100)
     date_set = models.DateField()
     eggs_set = models.PositiveIntegerField()
