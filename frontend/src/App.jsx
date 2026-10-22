@@ -12,6 +12,7 @@ import LogoutPage from './pages/LogoutPage'
 import Notifications from './pages/Notifications'
 import Settings from './pages/Settings'
 import ChakaFarmAi from './pages/ChakaFarmAi'
+import RegisterPage from './pages/RegisterPage'
 
 function hasAuthToken() {
   return Boolean(localStorage.getItem('ff_token') || sessionStorage.getItem('ff_token'))
@@ -41,6 +42,7 @@ function App() {
           <Routes>
             <Route path="/logout" element={<LogoutPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path='/register' element={<RegisterPage />} />
             <Route
               path="/"
               element={

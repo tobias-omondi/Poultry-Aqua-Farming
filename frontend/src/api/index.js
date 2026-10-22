@@ -80,6 +80,10 @@ API.interceptors.response.use(
 export const login = (credentials) =>
   API.post('/auth/login/', credentials)
 
+// Create a new account (used by the Register page)
+export const register = (data) =>
+  API.post('/auth/register/', data)
+
 export const logout = () => {
   setAuthToken(null)
 }
@@ -320,17 +324,14 @@ export const updateHouse = (id, data) => API.patch(`/housing/${id}/`, data)
     NOTIFICATIONS
   ========================================================= */
 
-  export const getNotifications = () => API.get('/notifications/')
-  export const markNotificationRead = (id, data) => API.patch(`/notifications/${id}/`, data)
-  export const markAllNotificationsRead = () => API.post('/notifications/mark-all-read/')
-  export const deleteNotification = (id) => API.delete(`/notifications/${id}/`)
-  
+export const getNotifications = () => API.get('/notifications/')
+export const markNotificationRead = (id, data) => API.patch(`/notifications/${id}/`, data)
+export const markAllNotificationsRead = () => API.post('/notifications/mark-all-read/')
+export const deleteNotification = (id) => API.delete(`/notifications/${id}/`)
 
-
-  /* =========================================================
+/* =========================================================
    AI (ChakaFarm AI)
 ========================================================= */
-
 
 const AI_URL = (import.meta.env.VITE_AI_URL || 'https://farmflowai-brcp.onrender.com/').replace(/\/$/, '')
 
