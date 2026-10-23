@@ -11,4 +11,6 @@ urlpatterns = [
     path('verify/', TokenVerifyView.as_view(), name='verify'),
     path('cookies/consent/', views.cookie_consent_view, name='cookie-consent'),
     path('cookies/status/', views.cookie_consent_status, name='cookie-status'),
+    path('settings/', views.my_settings),
+    path('change-password/', views.change_password),
 ]

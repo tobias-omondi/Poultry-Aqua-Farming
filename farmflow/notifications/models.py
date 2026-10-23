@@ -29,3 +29,16 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_kind_display()})"
+
+
+class NotificationPreference(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notification_prefs',
+    )
+    kind = models.CharField(max_length=20, choices=Notification.KIND_CHOICES)
+    enabled = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('user', 'kind')

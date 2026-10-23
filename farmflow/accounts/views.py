@@ -7,7 +7,9 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .serializers import RegisterSerializer, UserSerializer
-from .models import CookieConsent
+from .models import CookieConsent, Profile
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 
 class RegisterView(generics.CreateAPIView):
@@ -186,3 +188,47 @@ def cookie_consent_status(request):
             except CookieConsent.DoesNotExist:
                 pass
         return Response({'has_consent': False})
+
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def my_settings(request):
+    user = request.user
+    profile, _ = Profile.objects.get_or_create(user=user)
+
+    if request.method == 'PATCH':
+        data = request.data
+        user.first_name = data.get('name', user.first_name)
+        user.email = data.get('email', user.email)
+        user.save()
+        for field in ['phone', 'farm_name', 'location', 'branch_name']:
+            if field in data:
+                setattr(profile, field, data[field])
+        profile.save()
+
+    return Response({
+        'name': user.first_name,
+        'email': user.email,
+        'phone': profile.phone,
+        'farm_name': profile.farm_name,
+        'location': profile.location,
+        'branch_name': profile.branch_name,
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+    if not user.check_password(request.data.get('current_password', '')):
+        return Response({'error': 'Current password is wrong.'}, status=400)
+
+    new_password = request.data.get('new_password', '')
+    try:
+        validate_password(new_password, user)
+    except ValidationError as e:
+        return Response({'error': ' '.join(e.messages)}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+    return Response({'ok': True})

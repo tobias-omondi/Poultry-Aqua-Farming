@@ -4,6 +4,7 @@ from .views import (
     NotificationDetailView,
     mark_all_read,
     unread_count,
+    notification_prefs,
 )
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     path('<int:pk>/', NotificationDetailView.as_view(), name='notification-detail'),
     path('mark-all-read/', mark_all_read, name='notification-mark-all-read'),
     path('unread-count/', unread_count, name='notification-unread-count'),
+    path('preferences/', notification_prefs, name='notification-prefs'),
 ]
