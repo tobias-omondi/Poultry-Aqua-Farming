@@ -415,3 +415,14 @@ export const analyzeImage = async (file, batchId, age) => {
   if (!res.ok) throw new Error(await errorMessage(res))
   return res.json()
 }
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+export const getSettings = () => API.get('/auth/settings/')
+export const saveSettings = (data) => API.patch('/auth/settings/', data)
+export const changePassword = (data) => API.post('/auth/change-password/', data)
+
+export const getNotificationPrefs = () => API.get('/notifications/preferences/')
+export const saveNotificationPrefs = (data) => API.put('/notifications/preferences/', data)

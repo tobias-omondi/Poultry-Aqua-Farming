@@ -1,5 +1,13 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { User, Bell, MapPin, Lock, Save } from 'lucide-react'
+// NEW: the 5 functions that talk to Django
+import {
+  getSettings,
+  saveSettings,
+  changePassword,
+  getNotificationPrefs,
+  saveNotificationPrefs,
+} from '../api/index'
 
 // Mirrors Notification.KIND_CHOICES from the notifications app
 const NOTIFICATION_KINDS = [
@@ -42,8 +50,13 @@ function SaveBar({ saving, onSave }) {
   )
 }
 
-function ProfileSection({ saving, onSave }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '' })
+// CHANGED: now receives `initial` (the saved values from Django)
+function ProfileSection({ initial, saving, onSave }) {
+  const [form, setForm] = useState({
+    name: initial.name || '',
+    email: initial.email || '',
+    phone: initial.phone || '',
+  })
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -62,10 +75,9 @@ function ProfileSection({ saving, onSave }) {
   )
 }
 
-function NotificationsSection({ saving, onSave }) {
-  const [prefs, setPrefs] = useState(
-    Object.fromEntries(NOTIFICATION_KINDS.map(([key]) => [key, true]))
-  )
+// CHANGED: starts from the saved switches instead of "everything on"
+function NotificationsSection({ initial, saving, onSave }) {
+  const [prefs, setPrefs] = useState(initial)
   const toggle = (key) => setPrefs({ ...prefs, [key]: !prefs[key] })
 
   return (
@@ -89,8 +101,13 @@ function NotificationsSection({ saving, onSave }) {
   )
 }
 
-function FarmSection({ saving, onSave }) {
-  const [form, setForm] = useState({ farm_name: '', location: '', branch_name: '' })
+// CHANGED: receives `initial`
+function FarmSection({ initial, saving, onSave }) {
+  const [form, setForm] = useState({
+    farm_name: initial.farm_name || '',
+    location: initial.location || '',
+    branch_name: initial.branch_name || '',
+  })
   return (
     <div className="space-y-4">
       <FormField label="Farm name">
@@ -110,8 +127,18 @@ function FarmSection({ saving, onSave }) {
 }
 
 function SecuritySection({ saving, onSave }) {
-  const [form, setForm] = useState({ current_password: '', new_password: '', confirm_password: '' })
+  const empty = { current_password: '', new_password: '', confirm_password: '' }
+  const [form, setForm] = useState(empty)
   const mismatch = form.new_password && form.confirm_password && form.new_password !== form.confirm_password
+  // NEW: all three boxes must be filled in
+  const incomplete = !form.current_password || !form.new_password || !form.confirm_password
+
+  // NEW: only save if OK, and clear the boxes after a successful save
+  const handleClick = () => {
+    if (mismatch || incomplete) return
+    onSave(form).then(ok => { if (ok) setForm(empty) })
+  }
+
   return (
     <div className="space-y-4">
       <FormField label="Current password">
@@ -126,7 +153,7 @@ function SecuritySection({ saving, onSave }) {
         </FormField>
       </div>
       {mismatch && <div className="text-xs text-red-400">Passwords don't match.</div>}
-      <SaveBar saving={saving} onSave={() => !mismatch && onSave(form)} />
+      <SaveBar saving={saving} onSave={handleClick} />
     </div>
   )
 }
@@ -134,14 +161,49 @@ function SecuritySection({ saving, onSave }) {
 export default function Settings() {
   const [tab, setTab] = useState('profile')
   const [saving, setSaving] = useState(false)
+  // NEW: memory for the data that comes from Django
+  const [data, setData] = useState(null)        // profile + farm details
+  const [prefs, setPrefs] = useState(null)      // notification switches
+  const [loadError, setLoadError] = useState(false)
+  const [message, setMessage] = useState(null)  // the "Saved!" / error banner
 
+  // NEW: runs once when the page opens, asks Django for everything
+  useEffect(() => {
+    Promise.all([getSettings(), getNotificationPrefs()])
+      .then(([settingsRes, prefsRes]) => {
+        setData(settingsRes.data)
+        setPrefs(prefsRes.data)
+      })
+      .catch(() => setLoadError(true))
+  }, [])
+
+  // CHANGED: now really saves, and returns true (worked) or false (failed)
   const handleSave = (payload) => {
     setSaving(true)
-    // TODO: wire to the relevant endpoint once it exists on the backend
-    // e.g. updateProfile(payload) / updateNotificationPrefs(payload) / updateFarmDetails(payload) / changePassword(payload)
-    console.log(`Saving ${tab}:`, payload)
-    setTimeout(() => setSaving(false), 500)
+    setMessage(null)
+
+    let request
+    if (tab === 'security') request = changePassword(payload)
+    else if (tab === 'notifications') request = saveNotificationPrefs(payload)
+    else request = saveSettings(payload)
+
+    return request
+      .then(res => {
+        if (tab === 'profile' || tab === 'farm') setData(res.data)
+        if (tab === 'notifications') setPrefs(res.data)
+        setMessage({ type: 'success', text: 'Saved!' })
+        return true
+      })
+      .catch(err => {
+        setMessage({ type: 'error', text: err.response?.data?.error || 'Could not save. Please try again.' })
+        return false
+      })
+      .finally(() => setSaving(false))
   }
+
+  // NEW: what to show while waiting, or if loading failed
+  if (loadError) return <div className="text-sm text-red-400">Could not load your settings. Please refresh the page.</div>
+  if (!data || !prefs) return <div className="text-sm text-slate-500">Loading...</div>
 
   return (
     <div className="max-w-3xl w-full mx-auto">
@@ -156,7 +218,7 @@ export default function Settings() {
           return (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => { setTab(t.key); setMessage(null) }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap cursor-pointer border-none ${tab === t.key ? 'bg-green-500 text-black' : 'text-slate-400 hover:text-panel bg-transparent'}`}
             >
               <Icon className="w-4 h-4" /> {t.label}
@@ -165,10 +227,17 @@ export default function Settings() {
         })}
       </div>
 
+      {/* NEW: the green "Saved!" or red error banner */}
+      {message && (
+        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-semibold ${message.type === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+          {message.text}
+        </div>
+      )}
+
       <div className="bg-panel border border-panel rounded-2xl p-6">
-        {tab === 'profile' && <ProfileSection saving={saving} onSave={handleSave} />}
-        {tab === 'notifications' && <NotificationsSection saving={saving} onSave={handleSave} />}
-        {tab === 'farm' && <FarmSection saving={saving} onSave={handleSave} />}
+        {tab === 'profile' && <ProfileSection initial={data} saving={saving} onSave={handleSave} />}
+        {tab === 'notifications' && <NotificationsSection initial={prefs} saving={saving} onSave={handleSave} />}
+        {tab === 'farm' && <FarmSection initial={data} saving={saving} onSave={handleSave} />}
         {tab === 'security' && <SecuritySection saving={saving} onSave={handleSave} />}
       </div>
     </div>
