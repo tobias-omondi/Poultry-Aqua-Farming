@@ -169,3 +169,7 @@ Private — all rights reserved.
 ---
 
 *Built in Nairobi, Kenya.*
+
+## FRONTEND PAGE FOR USER VIEW
+Front end the page acts as a client point of view by instructing the client how to use the website and manage their flocks 
+
