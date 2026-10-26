@@ -1,9 +1,9 @@
-# Poultry-Aqua-Farming
-# FarmFlow
+# Poultry-Farming-ledger-ai-advisory
+# amazing-farm
 
-A farm management system for tracking poultry, turkey, and fish farming operations — built to handle real P&L, batch lifecycles, inventory, and housing across multiple farm types.
+A farm management system for tracking poultry operations — built to handle real P&L, batch lifecycles, inventory, eggs production, financials and housing across multiple farm types.
 
-> Phase 1 covers chickens. Turkey, fish/aquaculture, and an AI advisor layer are planned for future phases.
+> Phase 1 covers chickens, and an AI ad visor layer are planned for future phases.
 
 ---
 
@@ -13,6 +13,8 @@ A farm management system for tracking poultry, turkey, and fish farming operatio
 - **P&L engine** — real profit/loss per batch and per period, updated as you log
 - **Inventory management** — feed stock, medications, supplies, with low-stock alerts
 - **Housing management** — pens and coops with capacity tracking and batch assignments
+- **Eggs production** - eggs production per day,week and month and sales for eggs that are pending
+- **Financials** - Show how the money has been used to purchase things in a farm and what the farm has sale
 - **Evidence exports** — PDF reports, CSV exports, and an audit trail for investors or grant applications
 
 ---
@@ -26,18 +28,20 @@ A farm management system for tracking poultry, turkey, and fish farming operatio
 | Auth | JWT (planned) |
 | Frontend | React (planned) |
 | Hosting | Render (backend) + Vercel (frontend) |
+| AI | Fast Api | 
 
 ---
 
 ## Project structure
 
 ```
-farmflow/
+Amazing Farm/
 ├── core/               # Django project settings and root URLs
 ├── chickens/           # Flock management, batches, daily logs, mortality
 ├── inventory/          # Feed stock, medications, supplies, alerts
 ├── financials/         # Costs, sales, P&L engine
 ├── housing/            # Pens, coops, capacity, batch assignments
+|__Eggs/                #Eggs production per batch
 ├── manage.py
 ├── venv/
 └── .env                # Secret keys — never commit this
@@ -99,13 +103,16 @@ Server runs at `http://127.0.0.1:8000/`
 ---
 
 ---
-# FastApi for Anthropic AI Advisor
+# FastApi for Anthropic AI Advisor / Gemini studio Ai
 ## Install dependacies
     pip install fastapi uvicorn anthropic httpx python-dotenv pydantic
+    **pip install google-genai**
+
 
 fastapi — the API framework
 uvicorn — ASGI server to run FastAPI
 anthropic — Claude API client
+google-genai - Google Api
 httpx — async HTTP client to call Django APIs
 python-dotenv — for API keys
 pydantic — data validation
@@ -119,26 +126,17 @@ pydantic — data validation
 - [x] Project setup and app architecture
 - [x] Django models — Batch, DailyLog, Cost, Sale, Housing, inventory
 - [x] REST API endpoints
-- [ ] P&L calculation logic
-- [ ] Inventory stock and alert system
-- [ ] Admin panel configuration
-- [ ] React dashboard UI
+- [x] P&L calculation logic
+- [x] Inventory stock and alert system
+- [x] Admin panel configuration
+- [x] React dashboard UI
 
-### Phase 2 — Poultry + Turkey
-- [ ] Turkey module using shared batch engine
-- [ ] Species-specific parameters (growth rate, FCR targets)
-- [ ] Multi-species dashboard view
 
-### Phase 3 — Fish / Aquaculture
-- [ ] Fish/tilapia module
-- [ ] Tank management and water quality tracking
-- [ ] Aqua-specific cost and harvest flows
-
-### Phase 4 — AI layer
-- [ ] Yield forecasting based on historical batch data
-- [ ] Anomaly detection (unusual mortality, cost spikes)
-- [ ] AI advisor for optimising feed and harvest timing
-- [ ] Investor and grant evidence dashboard
+### Phase 2 — AI layer
+- [x] Yield forecasting based on historical batch data
+- [x] Anomaly detection (unusual mortality, cost spikes)
+- [x] AI advisor for optimising feed and harvest timing
+- [x] Investor and grant evidence dashboard
 
 ---
 
