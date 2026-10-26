@@ -6,44 +6,50 @@ import MobileMenu from './MobileMenu'
 import { NAV_LINKS } from './navLinks'
 import {
   Layers, HeartPulse, BarChart3, Home, Wrench, TrendingUp,
-  Users, Wheat, Syringe, Thermometer, Egg, Leaf, Beef,
+  Users, Wheat, Syringe, Thermometer,
 } from 'lucide-react'
 import chicken from "/src/assets/chicken.jpg"
-import goat from "/src/assets/goat.jpg"
-import cow from "/src/assets/cow.jpg"
 
 // ── DATA ──────────────────────────────────────────────────────
 const SPECIES = [
   {
-    code: 'SP-01 / POULTRY',
+    code: 'FL-01 / IMPROVED KIENYEJI',
     image: chicken,
-    name: 'Kienyeji & Broiler',
-    breeds: 'Kari Improved, Rainbow Rooster, Kenbro, Local Indigenous',
+    name: 'Improved Kienyeji',
+    breeds: 'Kari Improved, Rainbow Rooster, Kenbro, Sasso, Kuroiler',
     metricLabel: 'Tracked on',
-    metricValue: 'FCR & mortality',
+    metricValue: 'Growth & mortality',
   },
   {
-    code: 'SP-02 / GOATS',
-    image: goat,
-    name: 'Meat & Dairy Goats',
-    breeds: 'Boer, Galla, Toggenburg, Small East African',
+    code: 'FL-02 / INDIGENOUS KIENYEJI',
+    image: chicken,
+    name: 'Indigenous Kienyeji',
+    breeds: 'Local free-range, Naked Neck, Kenyan indigenous crosses',
     metricLabel: 'Tracked on',
-    metricValue: 'Weight & breeding',
+    metricValue: 'Hatch rate & survival',
   },
   {
-    code: 'SP-03 / CATTLE',
-    image: cow,
-    name: 'Beef & Dairy Cattle',
-    breeds: 'Friesian, Ayrshire, Boran, Zebu',
+    code: 'FL-03 / BROILERS',
+    image: chicken,
+    name: 'Broilers',
+    breeds: 'Cobb 500, Ross 308, Hubbard, Arbor Acres',
     metricLabel: 'Tracked on',
-    metricValue: 'Milk yield & health',
+    metricValue: 'FCR & sale weight',
+  },
+  {
+    code: 'FL-04 / LAYERS',
+    image: chicken,
+    name: 'Layers',
+    breeds: 'Isa Brown, Lohmann Brown, Hy-Line, Bovans',
+    metricLabel: 'Tracked on',
+    metricValue: 'Egg production',
   },
 ]
 
 const FEATURES = [
   {
     no: '01', icon: Layers, iconClass: '', title: 'Batch Tracking',
-    desc: 'Open a batch the day animals arrive and follow it to sale. Every cost and event logged against that batch, not the whole farm.',
+    desc: 'Open a batch the day chicks arrive and follow it to sale. Every cost and event logged against that batch, not the whole farm.',
     wide: true, mini: [{ n: 'FCR', l: 'Feed conversion' }, { n: '100%', l: 'Cost traced' }],
   },
   {
@@ -56,11 +62,11 @@ const FEATURES = [
   },
   {
     no: '04', icon: Home, iconClass: 'amber', title: 'Housing',
-    desc: 'Coops, pens, and sheds with capacity, occupancy, and which batch sits where.',
+    desc: 'Coops, brooders, and layer houses with capacity, occupancy, and which batch sits where.',
   },
   {
     no: '05', icon: Wrench, iconClass: '', title: 'Equipment Register',
-    desc: 'Every incubator, feeder, and water pump bought — cost, purchase date, and maintenance due.',
+    desc: 'Every incubator, feeder, drinker, and brooder heater bought — cost, purchase date, and maintenance due.',
     wide: true, mini: [{ n: 'Live', l: 'Asset list' }, { n: 'Auto', l: 'Maintenance due' }],
   },
   {
@@ -77,7 +83,7 @@ const FEATURES = [
   },
   {
     no: '09', icon: Syringe, iconClass: '', title: 'Medicine & Vaccination',
-    desc: 'Dosage history, vaccination schedule, and stock levels for every medicine on the farm.',
+    desc: 'Dosage history, vaccination schedule (Newcastle, Gumboro, fowl pox), and stock levels for every medicine on the farm.',
   },
   {
     no: '10', icon: Thermometer, iconClass: 'amber', title: 'Temperature Advice',
@@ -86,23 +92,23 @@ const FEATURES = [
 ]
 
 const FIN_ROWS = [
-  { name: 'Batch #3 — Broiler', sub: 'Kenbro · 240 birds', rev: '48,200', cost: '29,800', profit: '+18,400', posProfit: true },
-  { name: 'Batch #2 — Kienyeji', sub: 'Closed · 180 birds', rev: '21,000', cost: '11,800', profit: '+9,200', posProfit: true },
-  { name: 'Boer Herd', sub: 'Goats · 12 head', rev: '18,600', cost: '11,800', profit: '+6,800', posProfit: true },
-  { name: 'Batch #1 — Kienyeji', sub: 'Closed · 150 birds', rev: '14,400', cost: '15,900', profit: '-1,500', posProfit: false },
+  { name: 'Batch #3 — Broiler', sub: 'Cobb 500 · 240 birds', rev: '48,200', cost: '29,800', profit: '+18,400', posProfit: true, active: true },
+  { name: 'Batch #2 — Improved Kienyeji', sub: 'Closed · 180 birds', rev: '21,000', cost: '11,800', profit: '+9,200', posProfit: true, active: false },
+  { name: 'Batch #4 — Layers', sub: 'Isa Brown · 100 hens', rev: '18,600', cost: '11,800', profit: '+6,800', posProfit: true, active: true },
+  { name: 'Batch #1 — Indigenous Kienyeji', sub: 'Closed · 150 birds', rev: '14,400', cost: '15,900', profit: '-1,500', posProfit: false, active: false },
 ]
 
 const ALERTS = [
-  { icon: TrendingUp, tag: 'Sell signal', title: 'Batch #3 has hit optimal sale weight', desc: 'Kenbro birds averaging 1.9kg at 42 days — market price in your area is up 6% this week.', cls: '' },
+  { icon: TrendingUp, tag: 'Sell signal', title: 'Batch #3 has hit optimal sale weight', desc: 'Broilers averaging 1.9kg at 42 days — market price in your area is up 6% this week.', cls: '' },
   { icon: BarChart3, tag: 'Buy signal', title: 'Maize bran prices trending down', desc: 'Layer mash inputs are 8% cheaper than last month near you. Worth restocking before the next batch.', cls: 'warn' },
   { icon: Thermometer, tag: 'Temperature advice', title: 'Heat stress risk this week', desc: 'Daytime highs above 29°C forecast for your coop location — increase ventilation and check water supply twice daily.', cls: 'temp' },
 ]
 
 const BUYERS = [
   { name: 'Grace Wanjiru', loc: 'Kiambu Market', item: '40 broilers', amt: '9,600', status: 'paid' },
-  { name: 'Peter Otieno', loc: 'Ruiru', item: '2 Boer goats', amt: '24,000', status: 'paid' },
+  { name: 'Peter Otieno', loc: 'Ruiru', item: '20 kienyeji cockerels', amt: '16,000', status: 'paid' },
   { name: 'Mama Fatuma', loc: 'Mombasa Rd', item: 'Eggs, 30 trays', amt: '5,400', status: 'pending' },
-  { name: 'Samuel Kiprop', loc: 'Nakuru', item: 'Dairy milk, 60L', amt: '3,300', status: 'paid' },
+  { name: 'Samuel Kiprop', loc: 'Nakuru', item: 'Day-old chicks, 200', amt: '13,000', status: 'paid' },
 ]
 
 const TESTIMONIALS = [
@@ -116,7 +122,7 @@ const TESTIMONIALS = [
   },
   {
     quote: '"Feed consumption tracking showed me exactly where the bran was going. Equipment records made it easy to prove my assets for a loan."',
-    name: 'Daniel Kiptoo', role: 'Mixed Farmer · Nakuru', initials: 'DK',
+    name: 'Daniel Kiptoo', role: 'Layer Farmer · Nakuru', initials: 'DK',
   },
 ]
 
@@ -159,7 +165,7 @@ function Hero() {
         </h1>
         <p className="lg-desc">
           ChakFarm logs mortality, feed, medicine, and equipment against every
-          batch of chickens, goats, and cattle you run — then turns it into a
+          batch of kienyeji, broilers, and layers you run — then turns it into a
           real profit and loss, buyer records, and AI advice on when to buy,
           sell, and adjust for weather.
         </p>
@@ -168,18 +174,18 @@ function Hero() {
           <a href="#features" className="lg-btn-secondary">See how it works</a>
         </div>
         <div className="lg-stat-strip">
-          <div className="lg-stat"><div className="lg-stat-num">3</div><div className="lg-stat-label">Species tracked</div></div>
+          <div className="lg-stat"><div className="lg-stat-num">4</div><div className="lg-stat-label">Flock types</div></div>
           <div className="lg-stat"><div className="lg-stat-num">10</div><div className="lg-stat-label">Farm modules</div></div>
           <div className="lg-stat"><div className="lg-stat-num">Live</div><div className="lg-stat-label">P&L updates</div></div>
         </div>
       </div>
       <div className="lg-hero-right reveal reveal-d2">
+        <div className="lg-hero-photo">
+          <img src={chicken} alt="Free-range chickens on a Kenyan farm" />
+        </div>
         <div className="lg-ledger">
           <div className="lg-ledger-bar">
-            <div className="lg-ledger-dot" style={{ background: '#ff5f56' }} />
-            <div className="lg-ledger-dot" style={{ background: '#ffbd2e' }} />
-            <div className="lg-ledger-dot" style={{ background: '#28ca41' }} />
-            <span className="lg-ledger-path">chakfarm.co.ke/ledger</span>
+            <span className="lg-ledger-path" style={{ marginLeft: 0 }}>Live ledger · this month</span>
           </div>
           <div className="lg-ledger-head">
             <span>#</span><span>Batch</span><span style={{ textAlign: 'right' }}>Profit</span><span style={{ textAlign: 'right' }}>Status</span>
@@ -192,8 +198,8 @@ function Hero() {
                 <div className="lg-ledger-sub">{row.sub}</div>
               </span>
               <span className={`lg-ledger-figure ${row.posProfit ? 'pos' : 'neg'}`}>{row.profit}</span>
-              <span className={`lg-ledger-badge ${i === 0 || i === 2 ? 'active' : 'closed'}`}>
-                {i === 0 || i === 2 ? 'active' : 'closed'}
+              <span className={`lg-ledger-badge ${row.active ? 'active' : 'closed'}`}>
+                {row.active ? 'active' : 'closed'}
               </span>
             </div>
           ))}
@@ -222,21 +228,17 @@ function SpeciesSection() {
       <div className="lg-section-head reveal">
         <div>
           <div className="lg-eyebrow-plain">What we track</div>
-          <h2 className="lg-title">Every animal.<br /><span className="green">Every breed.</span></h2>
+          <h2 className="lg-title">Every flock.<br /><span className="green">Every breed.</span></h2>
         </div>
         <p className="lg-sub">
-          Built for Kenya's livestock sector — poultry, goats, and cattle,
-          each with breed-aware cost models and the metrics that actually
-          decide profitability.
+          Built for Kenya's poultry farmers — improved and indigenous kienyeji,
+          broilers, and layers, each with breed-aware cost models and the
+          metrics that actually decide profitability.
         </p>
       </div>
       <div className="lg-species-grid reveal">
-        {SPECIES.map(sp => (
-          <div className="lg-species-card" key={sp.name}>
-            <div className="lg-species-code">{sp.code}</div>
-            <div className="lg-species-img-wrap">
-              <img src={sp.image} alt={sp.name} className="lg-species-img" />
-            </div>
+        {SPECIES.map((sp, i) => (
+          <div className={`lg-species-card tone-${i}`} key={sp.name}>
             <div className="lg-species-name">{sp.name}</div>
             <div className="lg-species-breeds">{sp.breeds}</div>
             <div className="lg-species-metric">
@@ -258,7 +260,7 @@ function Features() {
           <h2 className="lg-title">Ten modules.<br /><span className="accent">One farm record.</span></h2>
         </div>
         <p className="lg-sub">
-          From the day an animal arrives to the shilling a buyer pays you —
+          From the day a chick arrives to the shilling a buyer pays you —
           every module writes to the same ledger, so nothing gets tracked twice.
         </p>
       </div>
@@ -269,7 +271,6 @@ function Features() {
             <div className={`lg-feature${f.wide ? ' span2' : ''}`} key={f.title}>
               <div className="lg-feature-top">
                 <div className={`lg-feature-icon ${f.iconClass}`}><Icon size={18} strokeWidth={1.8} /></div>
-                <div className="lg-feature-no">{f.no}</div>
               </div>
               <div className="lg-feature-title">{f.title}</div>
               <p className="lg-feature-desc">{f.desc}</p>
@@ -307,7 +308,7 @@ function Financials() {
           <div className="lg-fin-checks">
             {[
               'Revenue minus cost per batch, not just total farm revenue',
-              'Cost per bird or per head calculated from your daily logs',
+              'Cost per bird calculated from your daily logs',
               'Feed and medicine spend attributed to the batch that used it',
               'Running P&L updates the moment you log anything',
               'Equipment depreciation factored into true batch cost',
@@ -357,7 +358,7 @@ function AIAdvisor() {
         <div className="lg-ai-left reveal">
           <p className="lg-sub" style={{ marginBottom: 24 }}>
             The advisor reads your live batch data, local input prices, and
-            forecast conditions for your coop or shed location — then tells
+            forecast conditions for your coop location — then tells
             you the three things that actually move profit: when a batch is
             ready to sell, when inputs are worth buying ahead of, and when
             the weather itself is the risk.
@@ -423,7 +424,7 @@ function Testimonials() {
           <h2 className="lg-title">Trusted across<br /><span className="green">Kenya.</span></h2>
         </div>
         <p className="lg-sub">
-          From broiler farmers in Kiambu to mixed operations in Nakuru —
+          From broiler farmers in Kiambu to layer farms in Nakuru —
           real results from real farms.
         </p>
       </div>
@@ -477,7 +478,7 @@ function Footer({ onCookieSettings }) {
         <div>
           <div className="lg-footer-head">Platform</div>
           <ul className="lg-footer-links">
-            <li><a href="#species">Species</a></li>
+            <li><a href="#species">Flocks</a></li>
             <li><a href="#features">Features</a></li>
             <li><a href="#financials">Financials</a></li>
             <li><a href="/register">Get Started</a></li>
