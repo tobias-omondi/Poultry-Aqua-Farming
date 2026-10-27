@@ -1,0 +1,80 @@
+/* ══════════════════════════════════════════════════════════════
+   FINANCIALS PAGE — extra styles only.
+   Colours, buttons, section heads, CTA and footer come from LandingPage.css
+   ══════════════════════════════════════════════════════════════ */
+
+.fn-white { background: var(--surface); }
+
+/* HERO */
+.fn-hero { padding: 140px 48px 88px; max-width: 980px; }
+.fn-hero .lg-desc { max-width: 560px; }
+
+/* CALCULATOR */
+.fn-calc { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.fn-inputs { background: var(--off-white); border-radius: 18px; padding: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; }
+.fn-field span { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.fn-input { position: relative; }
+.fn-input input {
+  width: 100%; padding: 12px 52px 12px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--text);
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.fn-input input:focus { border-color: var(--sage-deep); box-shadow: 0 0 0 3px rgba(61, 138, 43, 0.15); }
+.fn-input em { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 12px; color: var(--text4); pointer-events: none; }
+.fn-reset { grid-column: span 2; justify-self: start; background: none; border: none; font-size: 13px; font-weight: 600; color: var(--sage-deep); padding: 4px 0; }
+.fn-reset:hover { text-decoration: underline; }
+
+.fn-result { background: var(--forest); color: var(--white); border-radius: 18px; padding: 32px 28px; }
+.fn-result-label { font-size: 14px; color: var(--on-forest); margin-bottom: 8px; }
+.fn-result-profit { font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(36px, 4.4vw, 56px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: 26px; }
+.fn-result-profit.pos { color: var(--white); }
+.fn-result-profit.neg { color: #ffb4a8; }
+.fn-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.14); border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
+.fn-stats div { background: var(--forest); padding: 14px 16px; }
+.fn-stats .wide { grid-column: span 2; }
+.fn-stats span { display: block; font-size: 12px; color: var(--on-forest); margin-bottom: 4px; }
+.fn-stats strong { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; }
+
+.fn-split-label { font-size: 13px; font-weight: 600; color: var(--on-forest); margin-bottom: 10px; }
+.fn-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.12); margin-bottom: 14px; }
+.fn-bar span { transition: width 0.3s ease; }
+.c1 { background: #e48a3a; }
+.c2 { background: #8fd17a; }
+.c3 { background: #bfdeb0; }
+.c4 { background: #7a8a6e; }
+.fn-legend { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.fn-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--on-forest); }
+.fn-legend i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.fn-legend b { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--white); }
+
+/* SCREENSHOT SPLIT */
+.fn-split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 72px; align-items: center; }
+.fn-shot { border-radius: 18px; overflow: hidden; background: var(--surface); border: 1px solid var(--rule); box-shadow: 0 28px 60px -34px rgba(28, 36, 22, 0.5); }
+.fn-shot img { display: block; width: 100%; height: auto; }
+.fn-points { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.fn-points li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--text2); line-height: 1.5; }
+.fn-tick { flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--pale); color: var(--sage-deep); margin-top: 1px; }
+
+/* COST CATEGORIES */
+.fn-costs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.fn-cost { background: var(--bg); border-radius: 18px; padding: 28px 24px; }
+.fn-cost-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: var(--pale); color: var(--sage-deep); margin-bottom: 18px; }
+.fn-cost:nth-child(even) .fn-cost-icon { background: var(--amber-pale); color: var(--amber); }
+.fn-cost h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.fn-cost p { font-size: 14px; color: var(--text3); line-height: 1.65; }
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .fn-calc { grid-template-columns: 1fr; }
+  .fn-costs { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .fn-hero { padding: 108px 20px 56px; }
+  .fn-split { grid-template-columns: 1fr; gap: 40px; }
+}
+@media (max-width: 720px) {
+  .fn-inputs { grid-template-columns: 1fr; padding: 22px; }
+  .fn-reset { grid-column: span 1; }
+  .fn-costs { grid-template-columns: 1fr; }
+  .fn-result { padding: 26px 22px; }
+}
