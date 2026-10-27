@@ -1,0 +1,38 @@
+/* ══════════════════════════════════════════════════════════════
+   FEATURES PAGE — extra styles only.
+   Colours, buttons, feature cards, CTA and footer come from LandingPage.css
+   ══════════════════════════════════════════════════════════════ */
+
+/* HERO */
+.ft-hero { padding: 140px 48px 88px; max-width: 980px; }
+.ft-hero .lg-desc { max-width: 560px; }
+
+/* SPOTLIGHT ROWS */
+.ft-spot { padding-top: 96px; padding-bottom: 96px; }
+.ft-white { background: var(--surface); }
+.ft-row { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+.ft-row.flip .ft-img { order: 2; }
+.ft-img {
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  box-shadow: 0 28px 60px -34px rgba(28, 36, 22, 0.5);
+}
+.ft-img img { display: block; width: 100%; height: auto; }
+.ft-text .lg-title { margin-bottom: 18px; }
+.ft-text .lg-sub { max-width: 500px; margin-bottom: 26px; }
+.ft-points { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.ft-points li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--text2); line-height: 1.5; }
+.ft-tick { flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--pale); color: var(--sage-deep); margin-top: 1px; }
+.ft-white .ft-tick { background: var(--off-white); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .ft-hero { padding: 108px 20px 56px; }
+  .ft-row { grid-template-columns: 1fr; gap: 36px; }
+  .ft-row.flip .ft-img { order: 0; }
+}
+@media (max-width: 720px) {
+  .ft-spot { padding-top: 64px; padding-bottom: 64px; }
+}

@@ -5,7 +5,7 @@ import LandingPage from './components/pages/LandingPage'
 import LoginPage from './components/pages/LoginPage'
 import Register from './components/pages/Register'
 import Dashboard from './components/pages/Dashboard'
-import Species from './components/pages/Species'
+import AboutPage from './components/pages/AboutPage'
 import Features from './components/pages/Features'
 import Financials from './components/pages/Financials'
 import AIAdvisor from './components/pages/AIAdvisor'
@@ -27,8 +27,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/species" element={<Species />} />
-        <Route path="/features" element={<Features />} />
+        <Route path="/About" element={<AboutPage />} />
+        <Route path="/features" element={<Features/>} />
         <Route path="/financials" element={<Financials />} />
         <Route path="/ai-advisor" element={<AIAdvisor />} />
         <Route path="/buyers" element={<Buyers />} />

@@ -265,7 +265,7 @@ function Features() {
         </p>
       </div>
       <div className="lg-feature-grid reveal">
-        {FEATURES.map(f => {
+        {FEATURES.slice(0, 3).map(f => {
           const Icon = f.icon
           return (
             <div className={`lg-feature${f.wide ? ' span2' : ''}`} key={f.title}>
@@ -287,6 +287,9 @@ function Features() {
             </div>
           )
         })}
+      </div>
+      <div className="reveal" style={{ marginTop: 28 }}>
+        <Link to="/features" className="lg-btn-secondary">See all 10 modules →</Link>
       </div>
     </section>
   )
